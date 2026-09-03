@@ -1,0 +1,6 @@
+{
+  "name": "Adal Uganda Company Limited",
+  "description": "Leading LPG cooking gas cylinder distribution in Mbarara, Uganda. Fast, safe domestic and commercial gas refills, complete sets, and certified accessories with express doorstep delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

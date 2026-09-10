@@ -278,7 +278,7 @@ export const STANDALONE_HTML_CODE = `<!DOCTYPE html>
       document.getElementById('summary-total').textContent = 'UGX ' + total.toLocaleString();
     }
 
-    function placeOrder() {
+    function placeOrder() 
       const name = document.getElementById('order-name').value;
       const phone = document.getElementById('order-phone').value;
       const address = document.getElementById('order-address').value;

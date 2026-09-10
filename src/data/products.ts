@@ -4,8 +4,17 @@ import heroCylindersImg from '../assets/images/adal_hero_cylinders_1788432361025
 import cylinder6kgImg from '../assets/images/cylinder_domestic_6kg_1788432398897.jpg';
 import cylinder12kgImg from '../assets/images/cylinder_family_12kg_1788432412719.jpg';
 import accessoriesImg from '../assets/images/gas_accessories_set_1788432384154.jpg';
+import totalEnergies3kgImg from '../assets/images/image (2).png';
+import totalEnergiesCylindersImg from '../assets/images/cylinders.jpg';
 
-export { heroCylindersImg, cylinder6kgImg, cylinder12kgImg, accessoriesImg };
+export {
+  heroCylindersImg,
+  cylinder6kgImg,
+  cylinder12kgImg,
+  accessoriesImg,
+  totalEnergies3kgImg,
+  totalEnergiesCylindersImg,
+};
 
 export const CYLINDER_PRODUCTS: Product[] = [
   {
@@ -22,7 +31,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 142,
     inStock: true,
-    image: cylinder6kgImg,
+    image: totalEnergies3kgImg,
     features: [
       'Direct burner screw top or compact regulator compatible',
       'Tamper-evident heat shrink safety seal',
@@ -50,7 +59,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 388,
     inStock: true,
-    image: cylinder6kgImg,
+    image: totalEnergiesCylindersImg,
     features: [
       'Universal quick-fit or screw valve compatibility',
       'Includes free grill burner on complete set purchase',
@@ -78,7 +87,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.95,
     reviewsCount: 520,
     inStock: true,
-    image: cylinder12kgImg,
+    image: totalEnergiesCylindersImg,
     features: [
       'Standard 20mm click-on valve with safety auto-shutoff support',
       'Long-lasting economical burn with high thermal efficiency',
@@ -106,7 +115,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 94,
     inStock: true,
-    image: heroCylindersImg,
+    image: totalEnergiesCylindersImg,
     features: [
       'High-flow POL brass valve for multi-burner high flame commercial stoves',
       'Heavy-duty industrial steel shell tested to 35 bar',

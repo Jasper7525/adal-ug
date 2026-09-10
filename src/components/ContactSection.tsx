@@ -263,6 +263,31 @@ export const ContactSection: React.FC = () => {
                 </div>
               </div>
 
+              {/* Google Map Embed */}
+              <div className="pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h4 className="text-sm font-bold text-slate-900">Find Us on Google Maps</h4>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Plot%2014%2C%20Mbarara-Masaka%20Highway%2C%20Mbarara%20City%2C%20Uganda"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cyan-800 hover:text-cyan-700"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Open Map</span>
+                  </a>
+                </div>
+                <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+                  <iframe
+                    title="Adal Uganda Mbarara Depot Map"
+                    src="https://www.google.com/maps?q=Plot%2014%2C%20Mbarara-Masaka%20Highway%2C%20Mbarara%20City%2C%20Uganda&output=embed"
+                    className="w-full h-56 border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+              </div>
+
               {/* Telephone hotlines */}
               <div className="flex items-start gap-3 pt-3 border-t border-slate-100">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">

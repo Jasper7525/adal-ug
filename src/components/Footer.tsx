@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, MapPin, Phone, Mail, Sparkles, Heart, Code2 } from 'lucide-react';
+import { ShieldCheck, MapPin, Phone, Mail, Sparkles, Heart } from 'lucide-react';
 import { MBARARA_DELIVERY_ZONES } from '../data/products';
 import { AdalLogo } from './AdalLogo';
 
@@ -100,15 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) =
               </div>
             </div>
 
-            <div className="pt-2">
-              <button
-                onClick={onOpenCodeModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors text-[11px]"
-              >
-                <Code2 className="w-3.5 h-3.5 text-orange-400" />
-                <span>View Standalone HTML Code</span>
-              </button>
-            </div>
+
           </div>
 
         </div>

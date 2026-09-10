@@ -1,18 +1,11 @@
 import React from 'react';
 import { 
-  Flame, 
-  ShieldCheck, 
-  Clock, 
-  Scale, 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  Truck,
-  PhoneCall,
+  Flame,
+  ArrowRight,
+  CheckCircle2,
   BadgeCheck
 } from 'lucide-react';
-import { heroCylindersImg } from '../data/products';
-import { AdalLogo } from './AdalLogo';
+import { totalEnergiesCylindersImg } from '../data/products';
 
 interface HeroProps {
   onQuickOrder: () => void;
@@ -43,16 +36,16 @@ export const Hero: React.FC<HeroProps> = ({ onQuickOrder, onExploreCatalog }) =>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display leading-[1.15] text-white">
               Pure Flame, Safe Cooking Gas{' '}
               <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 bg-clip-text text-transparent">
-                Delivered in 30 Mins
+                Delivered in a short time
               </span>{' '}
               Across Mbarara.
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
-              Adal Uganda Company Limited supplies genuine, high-efficiency LPG cylinders and refills for homes, 
-              hostels, and restaurants. Enjoy guaranteed exact weight on digital scales, clean smokeless blue heat, 
-              and complimentary doorstep leak inspections.
+              Adal Uganda Company Limited supplies genuine, high-efficiency LPG cylinders and refills for homes,
+              hostels, and restaurants. Enjoy guaranteed exact weight on digital scales, clean smokeless blue heat,
+              and certified safety guidance for safe LPG use.
             </p>
 
             {/* Quick Benefits Bullet Grid */}
@@ -63,11 +56,11 @@ export const Hero: React.FC<HeroProps> = ({ onQuickOrder, onExploreCatalog }) =>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
-                <span><strong>Express Delivery:</strong> 30–45 mins to all Mbarara zones</span>
+                <span><strong>Delivery Support:</strong> Service across Mbarara zones</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
-                <span><strong>Complimentary Safety Test:</strong> Free soapy leak check</span>
+                <span><strong>Safety Support:</strong> Leak inspection guidance</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
@@ -94,22 +87,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickOrder, onExploreCatalog }) =>
               >
                 <span>View Cylinders & Prices</span>
               </button>
-            </div>
-
-            {/* Contact quick strip */}
-            <div className="pt-2 flex items-center gap-4 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-cyan-400" />
-                Fleet Active in Mbarara
-              </span>
-              <span>•</span>
-              <a 
-                href="tel:+256772123456" 
-                className="flex items-center gap-1.5 text-slate-300 hover:text-orange-400 transition-colors"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-orange-400" />
-                Mbarara Dispatch: +256 772 123 456
-              </a>
             </div>
 
             {/* Key Metric Highlights */}
@@ -139,25 +116,13 @@ export const Hero: React.FC<HeroProps> = ({ onQuickOrder, onExploreCatalog }) =>
               <div className="relative rounded-3xl p-2 bg-gradient-to-tr from-cyan-500/20 via-slate-800/50 to-orange-500/20 backdrop-blur-md border border-slate-700/60 shadow-2xl">
                 <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-[4/3] sm:aspect-square flex items-center justify-center">
                   <img
-                    src={heroCylindersImg}
+                    src={totalEnergiesCylindersImg}
                     alt="Adal Uganda LPG Cooking Gas Cylinders Lineup in Mbarara"
                     className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
                   />
                   
                   {/* Subtle gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-
-                  {/* Official Brand Logo Badge */}
-                  <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 flex items-center gap-2.5 shadow-xl">
-                    <AdalLogo variant="icon" size="sm" />
-                    <div className="leading-tight">
-                      <div className="flex items-center gap-1 font-display font-black text-xs text-white">
-                        <span>ADAL</span>
-                        <span className="text-emerald-400">ENERGIES</span>
-                      </div>
-                      <p className="text-[9px] font-semibold text-slate-400">Official Mbarara Depot</p>
-                    </div>
-                  </div>
 
                   {/* On-image badge bottom */}
                   <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700 flex items-center justify-between">
@@ -172,31 +137,6 @@ export const Hero: React.FC<HeroProps> = ({ onQuickOrder, onExploreCatalog }) =>
                       From UGX 28,000
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Floating Badge 1: Top Right */}
-              <div className="absolute -top-4 -right-4 sm:-right-6 bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 p-3.5 rounded-2xl shadow-xl hidden sm:flex items-center gap-3 animate-bounce duration-1000">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/30">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <p className="text-xs font-bold text-white">Live Mbarara Dispatch</p>
-                  </div>
-                  <p className="text-[11px] text-slate-400">Riders on Standby</p>
-                </div>
-              </div>
-
-              {/* Floating Badge 2: Bottom Left */}
-              <div className="absolute -bottom-5 -left-4 sm:-left-6 bg-slate-900/95 backdrop-blur-md border border-orange-500/40 p-3.5 rounded-2xl shadow-xl flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 border border-orange-500/30">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white">Free Doorstep Safety Test</p>
-                  <p className="text-[11px] text-orange-300">Certified Leak Inspection</p>
                 </div>
               </div>
 

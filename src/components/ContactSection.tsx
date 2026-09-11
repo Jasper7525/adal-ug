@@ -10,7 +10,6 @@ import {
   ShieldAlert, 
   ChevronDown, 
   ChevronUp,
-  Flame,
   Award,
   ExternalLink
 } from 'lucide-react';
@@ -51,7 +50,6 @@ export const ContactSection: React.FC = () => {
         <div className="mb-20">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-bold uppercase tracking-wider mb-2">
-              <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
               Real Stories from Western Uganda
             </div>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">
@@ -120,7 +118,7 @@ export const ContactSection: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form id="contact-form" onSubmit={handleSubmit} className="space-y-4">
                 
                 {/* Name */}
                 <div className="relative">

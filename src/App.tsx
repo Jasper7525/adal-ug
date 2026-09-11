@@ -12,6 +12,19 @@ export default function App() {
   const [codeModalOpen, setCodeModalOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
+    if (sectionId === 'contact') {
+      const contactSection = document.getElementById('contact');
+      const contactForm = document.getElementById('contact-form');
+      if (contactForm) {
+        contactForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });

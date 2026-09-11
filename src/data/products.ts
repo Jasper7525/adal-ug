@@ -1,19 +1,17 @@
 import { Product, AccessoryItem, DeliveryZone } from '../types';
 
-import heroCylindersImg from '../assets/images/adal_hero_cylinders_1788432361025.jpg';
-import cylinder6kgImg from '../assets/images/cylinder_domestic_6kg_1788432398897.jpg';
-import cylinder12kgImg from '../assets/images/cylinder_family_12kg_1788432412719.jpg';
+import cylinder3kgImg from '../assets/images/3k.jpg';
+import cylinder6kgImg from '../assets/images/6k.jpg';
+import cylinder12kgImg from '../assets/images/12.5kg.jpg';
+import cylinder38kgImg from '../assets/images/38kg.webp';
 import accessoriesImg from '../assets/images/gas_accessories_set_1788432384154.jpg';
-import totalEnergies3kgImg from '../assets/images/image (2).png';
-import totalEnergiesCylindersImg from '../assets/images/cylinders.jpg';
 
 export {
-  heroCylindersImg,
+  cylinder3kgImg,
   cylinder6kgImg,
   cylinder12kgImg,
+  cylinder38kgImg,
   accessoriesImg,
-  totalEnergies3kgImg,
-  totalEnergiesCylindersImg,
 };
 
 export const CYLINDER_PRODUCTS: Product[] = [
@@ -22,7 +20,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     name: '3kg Compact LPG Cylinder',
     category: '3kg',
     sizeKg: 3,
-    description: 'Ultra-portable compact cylinder designed for students, solo studio living, and quick outdoor camping cooking.',
+    description: '',
     bestFor: 'Students, Singles & Outdoor Camping',
     burnDuration: 'Approx. 2–3 weeks (daily domestic use)',
     refillPriceUGX: 28000,
@@ -31,7 +29,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.8,
     reviewsCount: 142,
     inStock: true,
-    image: totalEnergies3kgImg,
+    image: cylinder3kgImg,
     features: [
       'Direct burner screw top or compact regulator compatible',
       'Tamper-evident heat shrink safety seal',
@@ -50,7 +48,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     name: '6kg Household Domestic Cylinder',
     category: '6kg',
     sizeKg: 6,
-    description: 'Uganda’s most popular home cooking gas cylinder. Compact, easy to handle, and fits perfectly in any kitchen or apartment.',
+    description: '',
     bestFor: 'Small families, apartments, and couples',
     burnDuration: 'Approx. 4–6 weeks (daily family cooking)',
     refillPriceUGX: 52000,
@@ -59,7 +57,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewsCount: 388,
     inStock: true,
-    image: totalEnergiesCylindersImg,
+    image: cylinder6kgImg,
     features: [
       'Universal quick-fit or screw valve compatibility',
       'Includes free grill burner on complete set purchase',
@@ -78,7 +76,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     name: '12.5kg Family Standard Cylinder',
     category: '12.5kg',
     sizeKg: 12.5,
-    description: 'The premier choice for standard homes and busy family kitchens in Mbarara. Long-lasting, economical, and dependable clean cooking.',
+    description: '',
     bestFor: 'Medium to large families & frequent home chefs',
     burnDuration: 'Approx. 8–12 weeks continuous family cooking',
     refillPriceUGX: 110000,
@@ -87,7 +85,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 4.95,
     reviewsCount: 520,
     inStock: true,
-    image: totalEnergiesCylindersImg,
+    image: cylinder12kgImg,
     features: [
       'Standard 20mm click-on valve with safety auto-shutoff support',
       'Long-lasting economical burn with high thermal efficiency',
@@ -106,7 +104,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     name: '38kg Commercial Heavy-Duty Cylinder',
     category: '38kg',
     sizeKg: 38,
-    description: 'High-capacity industrial cylinder engineered for hotels, restaurants, bakeries, schools, and institutional catering across Mbarara.',
+    description: '',
     bestFor: 'Restaurants, Hotels, Bakeries & Commercial Kitchens',
     burnDuration: 'Heavy commercial continuous high-flame operation',
     refillPriceUGX: 320000,
@@ -115,7 +113,7 @@ export const CYLINDER_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 94,
     inStock: true,
-    image: totalEnergiesCylindersImg,
+    image: cylinder38kgImg,
     features: [
       'High-flow POL brass valve for multi-burner high flame commercial stoves',
       'Heavy-duty industrial steel shell tested to 35 bar',
@@ -280,26 +278,26 @@ export const SAFETY_TIPS = [
 export const TESTIMONIALS = [
   {
     id: 1,
-    name: 'Mugisha Kenneth',
-    role: 'Head Chef, Ankole Kingdom Bistro (Booma, Mbarara)',
-    comment: 'Adal Uganda has never let our restaurant down. During peak weekend dinner rushes when we need emergency 38kg cylinders, their truck delivers to Booma in under 35 minutes with certified full weight scales.',
+    name: 'Mbarara Gas Point Network',
+    role: 'Retail LPG Sales Point, Booma',
+    comment: 'Adal keeps our cylinder stock reliable and ready for local customers. We depend on their Mbarara depot for clean branded cylinders and fast supply support.',
     rating: 5,
-    cylinder: '38kg Commercial'
+    cylinder: 'Commercial Supply'
   },
   {
     id: 2,
-    name: 'Sarah Ainembabazi',
-    role: 'Homeowner in Kamukuzi Division',
-    comment: 'The free leak inspection on delivery is what won my trust. The rider not only carried the 12.5kg cylinder into my kitchen but also performed a soapy water check and tested my stove burner flame.',
+    name: 'Kakoba Gas Retailers Association',
+    role: 'Gas Point Group, Kakoba',
+    comment: 'Our gas point needs steady cylinder supply, full safety checks and accessories. Adal has helped us build that trust with an organized delivery and certified product flow.',
     rating: 5,
-    cylinder: '12.5kg Family Cylinder'
+    cylinder: 'Retail Supply'
   },
   {
     id: 3,
-    name: 'Brian Tumuhimbise',
-    role: 'MUST Medical Student (Kakoba)',
-    comment: 'I ordered a 6kg refill via their instant WhatsApp order system while in lectures, and by the time I walked back to my hostel in Kakoba, the cylinder was at my door! Pure blue flame, no black soot on pots.',
+    name: 'Nyamitanga Depot Partner',
+    role: 'Gas Point Partner, Nyamitanga',
+    comment: 'We receive cylinders and safety accessories from Adal as a TotalEnergies distributor partner. Their depot coordination keeps our shelves and customer demand covered.',
     rating: 5,
-    cylinder: '6kg Household Refill'
+    cylinder: 'Gas Point Supply'
   }
 ];

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Flame,
   Star,
   Phone,
 } from 'lucide-react';
@@ -31,12 +30,8 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-bold uppercase tracking-wider mb-3">
-              <Flame className="w-3.5 h-3.5 text-orange-600 fill-orange-600" />
-              Certified LPG Supply
-            </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
-              LPG Cylinders & Certified Accessories
+              LPG Cylinders & Accessories
             </h2>
             <p className="mt-2 text-base text-slate-600 max-w-2xl">
               Adal Uganda supplies cylinders and accessories through the Mbarara depot for gas points, kitchens and commercial service teams.
@@ -206,7 +201,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 font-display flex items-center gap-2">
-                  <span>Certified Cylinder Safety Accessories</span>
+                  <span>Safety Accessories</span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
                     4 Safety Essentials
                   </span>
@@ -231,11 +226,6 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }
                           alt={accessory.name}
                           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute top-3 right-3">
-                          <span className="px-2 py-1 rounded-md text-[10px] font-extrabold bg-slate-900/90 text-white backdrop-blur-sm">
-                            Certified Safety Part
-                          </span>
-                        </div>
                       </div>
 
                       <div className="p-5">

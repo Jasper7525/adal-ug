@@ -110,6 +110,10 @@
   gap: 0.45rem;
 }
 
+.liquid-nav-label i {
+  margin-right: 8px;
+}
+
 .liquid-nav-link:hover .liquid-nav-label,
 .liquid-nav-link.active .liquid-nav-label {
   color: #ffffff;

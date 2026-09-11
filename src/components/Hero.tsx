@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Flame,
   ArrowRight,
   CheckCircle2,
-  BadgeCheck
 } from 'lucide-react';
 
 interface HeroProps {
@@ -46,13 +44,6 @@ export const Hero: React.FC<HeroProps> = ({ onExploreCatalog, onContactDepot }) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-center">
           <div className="w-full max-w-4xl flex flex-col items-center text-center space-y-6">
-            
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700/80 text-cyan-300 text-xs sm:text-sm font-semibold shadow-inner">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <BadgeCheck className="w-4 h-4 text-cyan-400" />
-              <span>Certified TotalEnergies LPG Distributor in Mbarara</span>
-            </div>
-
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display leading-[1.15] text-white max-w-4xl">
               <span className="typewriter-line block">
                 <span className="typed-text text-white">{typedLineOne}</span>
@@ -80,10 +71,6 @@ export const Hero: React.FC<HeroProps> = ({ onExploreCatalog, onContactDepot }) 
                 <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
                 <span><strong>Depot Supply:</strong> Mbarara gas-point distribution</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-200">
-                <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />
-                <span><strong>Certified:</strong> TotalEnergies distributor network</span>
-              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto pt-2">
@@ -92,7 +79,6 @@ export const Hero: React.FC<HeroProps> = ({ onExploreCatalog, onContactDepot }) 
                 id="hero-contact-depot-btn"
                 className="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-2xl text-base font-bold text-slate-950 bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 hover:from-orange-300 hover:to-amber-400 shadow-xl shadow-orange-500/30 hover:shadow-orange-500/40 hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
               >
-                <Flame className="w-5 h-5 fill-slate-950 text-slate-950" />
                 <span>Contact Adal Depot</span>
                 <ArrowRight className="w-5 h-5" />
               </button>

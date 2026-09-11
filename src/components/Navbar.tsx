@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Phone,
-  Menu,
-  X,
-  MapPin,
-  ChevronRight,
-  Home,
-  Package,
-  Wrench,
-  ShieldCheck,
-  Info,
-  type LucideIcon,
-} from 'lucide-react';
+import { Phone, Menu, X, MapPin, ChevronRight } from 'lucide-react';
 import { AdalLogo } from './AdalLogo';
 
 interface NavbarProps {
@@ -21,7 +9,7 @@ interface NavbarProps {
 interface NavItem {
   label: string;
   target: string;
-  icon: LucideIcon;
+  iconClass: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
@@ -30,12 +18,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const [activeSection, setActiveSection] = useState('home');
 
   const navLinks: NavItem[] = [
-    { label: 'Home', target: 'home', icon: Home },
-    { label: 'Cylinders & Prices', target: 'catalog', icon: Package },
-    { label: 'Accessories', target: 'accessories', icon: Wrench },
-    { label: 'Why Adal', target: 'features', icon: Info },
-    { label: 'Safety Guide', target: 'features', icon: ShieldCheck },
-    { label: 'Contact & Depot', target: 'contact', icon: MapPin },
+    { label: 'Home', target: 'home', iconClass: 'fa-solid fa-house' },
+    { label: 'Cylinders & Prices', target: 'catalog', iconClass: 'fa-solid fa-gas-pump' },
+    { label: 'Accessories', target: 'accessories', iconClass: 'fa-solid fa-cart-shopping' },
+    { label: 'Why Adal', target: 'features', iconClass: 'fa-solid fa-circle-info' },
+    { label: 'Safety Guide', target: 'features', iconClass: 'fa-solid fa-shield-heart' },
   ];
 
   useEffect(() => {
@@ -133,7 +120,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
 
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => {
-              const Icon = link.icon;
               const isActive = activeSection === link.target;
 
               return (
@@ -145,8 +131,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <span className="liquid-nav-label flex items-center gap-2">
-                    <Icon className="w-4 h-4 liquid-icon" />
+                  <span className="liquid-nav-label flex items-center">
+                    <i className={`${link.iconClass} liquid-icon`} aria-hidden="true" />
                     <span>{link.label}</span>
                   </span>
                   <span className="liquid-drop" />
@@ -188,7 +174,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
           <div className="lg:hidden border-t border-slate-200 bg-white/95 backdrop-blur-md px-4 pt-3 pb-6 shadow-xl animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => {
-                const Icon = link.icon;
                 const isActive = activeSection === link.target;
 
                 return (
@@ -202,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
+                      <i className={`${link.iconClass} w-4 h-4`} aria-hidden="true" />
                       <span>{link.label}</span>
                     </span>
                     <ChevronRight className="w-4 h-4 text-slate-400" />

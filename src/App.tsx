@@ -39,9 +39,9 @@ export default function App() {
       <Navbar onNavigate={scrollToSection} />
       <main className="flex-1 relative">
         {mediaOpen ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage onClose={closeAdmin} /> : <>
-          <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact')} />
+          <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact-form')} />
           <SafetyFeatures />
-          <ProductCatalog onContactDepot={() => scrollToSection('contact')} />
+          <ProductCatalog onContactDepot={() => scrollToSection('contact-form')} />
           <NewsUpdates />
           <ContactSection />
         </>}

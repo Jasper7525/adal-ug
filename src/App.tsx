@@ -32,11 +32,12 @@ export default function App() {
   };
 
   const closeAdmin = () => { setAdminOpen(false); setMediaOpen(false); window.location.hash = ''; };
+  const openMedia = () => { setMediaOpen(true); window.location.hash = '#admin-media'; };
 
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <Navbar onNavigate={scrollToSection} />
-      <main className="flex-1">
+      <main className="flex-1 relative">
         {mediaOpen ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage onClose={closeAdmin} /> : <>
           <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact')} />
           <SafetyFeatures />
@@ -44,6 +45,7 @@ export default function App() {
           <NewsUpdates />
           <ContactSection />
         </>}
+        {adminOpen && !mediaOpen && sessionStorage.getItem('adalAdminToken') && <button onClick={openMedia} className="fixed bottom-6 right-6 z-40 rounded-full bg-orange-500 px-5 py-3 text-xs font-black text-white shadow-xl hover:bg-orange-600">Media Library</button>}
       </main>
       <Footer onNavigate={scrollToSection} onOpenCodeModal={() => setCodeModalOpen(true)} />
       <FloatingWhatsApp />

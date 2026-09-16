@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adal Uganda User Requirements Document</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --brand: #f97316;
+      --brand-dark: #9a4d10;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --shadow: rgba(15, 23, 42, 0.12);
+      --font: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    .document {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .document-header {
+      border-bottom: 2px solid var(--brand);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+
+    .document-header h1 {
+      margin: 0 0 10px;
+      font-size: clamp(36px, 4vw, 56px);
+      line-height: 1.12;
+      color: var(--text);
+    }
+
+    .document-header .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 30px var(--shadow);
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      color: var(--brand-dark);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .section h3 {
+      font-size: 18px;
+      color: var(--text);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    ul {
+      padding-left: 22px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    table, th, td {
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #fff7ed;
+      color: var(--brand-dark);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #fff7ed;
+      border: 1px solid var(--brand);
+      color: var(--brand-dark);
+      font-weight: 700;
+      font-size: 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .cta {
+      text-align: right;
+      margin-top: 22px;
+    }
+
+    .cta a {
+      display: inline-block;
+      text-decoration: none;
+      background: var(--brand);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="document">
+    <header class="document-header">
+      <div class="meta">
+        <span>Adal Uganda Company Limited</span>
+        <span>|</span>
+        <span>Mbarara City, Uganda</span>
+        <span>|</span>
+        <span>User Requirements Document</span>
+      </div>
+      <h1>Adal Uganda LPG Ordering & Delivery Platform</h1>
+      <div class="meta">
+        <span>Document Status: Draft</span>
+        <span>|</span>
+        <span>Version: 1.0</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>1. Project Overview</h2>
+      <p>
+        Adal Uganda Company Limited operates a cooking gas distribution business serving customers in Mbarara City and surrounding areas in Western Uganda. The platform is intended to help customers browse LPG cylinders, understand safety requirements, request delivery, and contact the dispatch team quickly.
+      </p>
+      <div class="badge">Purpose</div>
+      <div class="badge">Website</div>
+      <div class="badge">Distribution</div>
+    </section>
+
+    <section class="section">
+      <h2>2. Business Objective</h2>
+      <p>
+        The project aims to create an online sales and dispatch experience for LPG cylinders and accessories. The solution should increase customer trust, simplify ordering, and improve delivery visibility for LPG cylinder supply in Mbarara.
+      </p>
+      <ul>
+        <li>Promote cylinder products and accessories.</li>
+        <li>Support direct request for domestic, family, commercial, and camping LPG cylinder sizes.</li>
+        <li>Increase confidence through safety messaging and UNBS-certified product information.</li>
+        <li>Allow a customer to contact Mbarara dispatch by phone or WhatsApp.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>3. Target Users</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>User Type</th>
+            <th>Needs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Home customers</td>
+            <td>Browse cylinders, compare quantities and prices, request delivery.</td>
+          </tr>
+          <tr>
+            <td>Business customers</td>
+            <td>Request larger cylinder packages and commercial supply options.</td>
+          </tr>
+          <tr>
+            <td>Safety-focused customers</td>
+            <td>Understand safe gas handling, fittings, and gas regulator requirements.</td>
+          </tr>
+          <tr>
+            <td>Dispatch team</td>
+            <td>Receive requests through website or direct contact systems.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>4. Functional Requirements</h2>
+      <ul>
+        <li>The website must present the brand and business location clearly.</li>
+        <li>The homepage must show a hero area and deployment-ready product positioning.</li>
+        <li>The product catalog must display LPG cylinder sizes and accessory categories.</li>
+        <li>The contact section must allow the customer to submit a request or call the depot.</li>
+        <li>The site must include a prominent WhatsApp dispatch link.</li>
+        <li>A floating WhatsApp interaction must be visible across the page.</li>
+        <li>The footer must provide delivery contact information and downloadable project resources.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>5. Non-Functional Requirements</h2>
+      <ul>
+        <li>The website must be responsive across mobile, tablet, and desktop layouts.</li>
+        <li>Page content should be colorful, trustworthy, modern, and clean.</li>
+        <li>Navigation should support smooth section scrolling.</li>
+        <li>Website should be accessible through clear landing page calls-to-action.</li>
+        <li>Visual assets and safety content should reflect the Adal Uganda brand.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>6. Content Requirements</h2>
+      <ul>
+        <li>Brand: Adal Uganda Company Limited</li>
+        <li>Market: Mbarara City, Western Uganda</li>
+        <li>Focus products: 3kg cylinder, 6kg domestic cylinder, 12.5kg family standard cylinder, 38kg commercial cylinder</li>
+        <li>Safety: UNBS certified brass valves, regulator, hose, and LPG safety messaging</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>7. Success Criteria</h2>
+      <ul>
+        <li>Customers can discover cylinders and accessories quickly.</li>
+        <li>Customers can contact the dispatch team or place an order through obvious CTAs.</li>
+        <li>Customers understand product safety and delivery benefits.</li>
+        <li>The site is ready for launch and further feature expansion.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>8. Assumptions and Constraints</h2>
+      <ul>
+        <li>The project uses static React and Vite.</li>
+        <li>The UI must support responsive design and online product discovery.</li>
+        <li>Delivery contact details and address are currently represented in the landing page and contact details.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>9. Release Notes</h2>
+      <p>
+        This requirements document forms the foundation for the website. It should be reviewed by the product owner, sales team, and dispatch team before implementation is extended into finance, order dashboards, or live inventory management.
+      </p>
+    </section>
+
+    <div class="cta">
+      <a href="/docs/adal-uganda-user-requirements-document.html" download="adal-uganda-user-requirements-document.html">Download Document</a>
+    </div>
+  </main>
+</body>
+</html>
+</html>

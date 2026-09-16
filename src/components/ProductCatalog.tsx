@@ -1,23 +1,140 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Star,
   Phone,
 } from 'lucide-react';
-import { CYLINDER_PRODUCTS, ACCESSORY_PRODUCTS } from '../data/products';
-import { ProductCategory } from '../types';
+import { ACCESSORY_PRODUCTS } from '../data/products';
+import { Product, ProductCategory } from '../types';
 
 interface ProductCatalogProps {
   onContactDepot: () => void;
 }
 
+interface CatalogApiProduct {
+  id: number;
+  code: string;
+  name: string;
+  size: string;
+  category: string;
+  price: number;
+  description: string;
+  image_url: string;
+}
+
+const defaultCatalogProducts: Product[] = [
+  {
+    id: 'lpg-3kg',
+    name: '3kg Compact LPG Cylinder',
+    category: '3kg',
+    sizeKg: 3,
+    description: 'Portable LPG cylinder',
+    bestFor: 'Students, Singles & Outdoor Camping',
+    burnDuration: 'Approx. 2–3 weeks (daily domestic use)',
+    refillPriceUGX: 32000,
+    completePriceUGX: 115000,
+    currentType: 'refill',
+    rating: 4.8,
+    reviewsCount: 142,
+    inStock: true,
+    image: '/uploads/default-3kg.jpg',
+    features: [],
+    specs: {
+      valveType: 'Compact Camping / Standard Screw 16mm',
+      tareWeight: '3.4 kg',
+      totalWeight: '6.4 kg (when filled)',
+      certification: 'UNBS Certified (US EAS 900)',
+    },
+  },
+  {
+    id: 'lpg-6kg',
+    name: '6kg Household Domestic Cylinder',
+    category: '6kg',
+    sizeKg: 6,
+    description: 'Household LPG cylinder',
+    bestFor: 'Small families, apartments, and couples',
+    burnDuration: 'Approx. 4–6 weeks (daily family cooking)',
+    refillPriceUGX: 55000,
+    completePriceUGX: 185000,
+    currentType: 'refill',
+    rating: 4.9,
+    reviewsCount: 388,
+    inStock: true,
+    image: '/uploads/default-6kg.jpg',
+    features: [],
+    specs: {
+      valveType: '20mm Compact Valve / Standard Household',
+      tareWeight: '6.5 kg',
+      totalWeight: '12.5 kg (when filled)',
+      certification: 'UNBS Certified (US EAS 900) & ISO 9001',
+    },
+  },
+];
+
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }) => {
   const [activeTab, setActiveTab] = useState<ProductCategory>('all');
   const [openDetailsId, setOpenDetailsId] = useState<string | null>(null);
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>(defaultCatalogProducts);
 
-  const filteredCylinders = CYLINDER_PRODUCTS.filter(c => {
-    if (activeTab === 'all' || activeTab === 'cylinders') return true;
-    return c.category === activeTab;
-  });
+  const loadProducts = async () => {
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error('Could not load products');
+      }
+
+      const rows: CatalogApiProduct[] = await response.json();
+      if (!Array.isArray(rows) || rows.length === 0) {
+        setCatalogProducts(defaultCatalogProducts);
+        return;
+      }
+
+      const mapped = rows.map((row) => {
+        const fallbackCategory = row.category || row.size || '3kg';
+        const category = fallbackCategory as Product['category'];
+        const sizeMatch = String(row.size || '').match(/\d+(?:\.\d+)?/);
+        const sizeKg = sizeMatch ? Number(sizeMatch[0]) : undefined;
+
+        return {
+          id: String(row.id),
+          name: row.name,
+          category,
+          sizeKg,
+          description: row.description || '',
+          bestFor: `Bulk supply for ${row.name}`,
+          burnDuration: 'Available for scheduled delivery',
+          refillPriceUGX: Number(row.price || 0),
+          completePriceUGX: Number(row.price || 0),
+          currentType: 'refill',
+          rating: 4.9,
+          reviewsCount: 0,
+          inStock: true,
+          image: row.image_url || '/uploads/default-3kg.jpg',
+          features: [],
+          specs: {
+            valveType: 'Product supply selection',
+            tareWeight: '',
+            totalWeight: '',
+            certification: 'Adal Uganda Storefront',
+          },
+        } as Product;
+      });
+
+      setCatalogProducts(mapped);
+    } catch (error) {
+      setCatalogProducts(defaultCatalogProducts);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const filteredCylinders = useMemo(() => {
+    return catalogProducts.filter((c) => {
+      if (activeTab === 'all' || activeTab === 'cylinders') return true;
+      return c.category === activeTab;
+    });
+  }, [activeTab, catalogProducts]);
 
   const showAccessories = activeTab === 'all' || activeTab === 'accessories';
 
@@ -103,7 +220,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }
 
                         <div className="absolute top-1 left-1 flex flex-wrap gap-1">
                           <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-900/90 text-white backdrop-blur-sm border border-slate-700">
-                            {product.sizeKg}kg LPG
+                            {product.sizeKg ?? product.category}kg LPG
                           </span>
                           <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-900/90 text-emerald-200 backdrop-blur-sm">
                             In Stock

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { SafetyFeatures } from './components/SafetyFeatures';
@@ -7,9 +7,20 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { StandaloneCodeModal } from './components/StandaloneCodeModal';
+import { AdminPage } from './components/AdminPage';
 
 export default function App() {
   const [codeModalOpen, setCodeModalOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(() => window.location.hash === '#admin');
+
+  useEffect(() => {
+    const onHashChange = () => {
+      setAdminOpen(window.location.hash === '#admin');
+    };
+
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     if (sectionId === 'contact') {
@@ -36,16 +47,25 @@ export default function App() {
       <Navbar onNavigate={scrollToSection} />
 
       <main className="flex-1">
-        <Hero
-          onExploreCatalog={() => scrollToSection('catalog')}
-          onContactDepot={() => scrollToSection('contact')}
-        />
+        {adminOpen ? (
+          <AdminPage onClose={() => {
+            setAdminOpen(false);
+            window.location.hash = '';
+          }} />
+        ) : (
+          <>
+            <Hero
+              onExploreCatalog={() => scrollToSection('catalog')}
+              onContactDepot={() => scrollToSection('contact')}
+            />
 
-        <SafetyFeatures />
+            <SafetyFeatures />
 
-        <ProductCatalog onContactDepot={() => scrollToSection('contact')} />
+            <ProductCatalog onContactDepot={() => scrollToSection('contact')} />
 
-        <ContactSection />
+            <ContactSection />
+          </>
+        )}
       </main>
 
       <Footer onNavigate={scrollToSection} onOpenCodeModal={() => setCodeModalOpen(true)} />

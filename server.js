@@ -22,6 +22,7 @@ app.locals.visitorStore = [];
 app.locals.imageStore = [];
 app.locals.imageStoreSequence = 1;
 app.locals.contentStore = [];
+app.locals.mediaStore = [];
 app.use(express.json({ limit: '5mb' }));
 
 app.use((req, _res, next) => {

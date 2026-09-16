@@ -1,13 +1,10 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
-dotenv.config();
-
-const { initializeSchema, query } = await import('./db/postgres.js');
-
+import './db/postgres.js';
+import { initializeSchema, query } from './db/postgres.js';
 import adminRoutes from './routes/adminRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';

@@ -64,5 +64,14 @@ app.get('*', (req, res, next) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-initializeSchema().catch(error => console.log('PostgreSQL initialization skipped or failed:', error.message));
-app.listen(PORT, () => console.log(`Adal Uganda Express server running on http://localhost:${PORT}`));
+async function startServer() {
+  try {
+    await initializeSchema();
+    app.listen(PORT, () => console.log(`Adal Uganda Express server running on http://localhost:${PORT}`));
+  } catch (error) {
+    console.error('PostgreSQL initialization failed:', error.message);
+    process.exit(1);
+  }
+}
+
+startServer();

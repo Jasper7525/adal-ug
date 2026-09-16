@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
+    "start": "node server.js",
     "test:e2e": "node scripts/e2e-smoke.mjs",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

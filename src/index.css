@@ -1,180 +1,29 @@
 @import "tailwindcss";
 
 @layer base {
-  html {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    scroll-behavior: smooth;
-  }
-  h1, h2, h3, h4, .font-display {
-    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  }
+  html { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; scroll-behavior: smooth; }
+  body { overflow-x: hidden; }
+  h1, h2, h3, h4, .font-display { font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif; }
 }
 
-.typewriter-line {
-  display: block;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  max-width: 100%;
-  border-right: 2px solid rgba(251, 191, 36, 0.95);
+.typewriter-line { display:block; white-space:normal; overflow-wrap:anywhere; max-width:100%; border-right:2px solid rgba(251,191,36,.95); }
+.typed-text { display:inline-block; }
+.typed-cursor { display:inline-block; margin-left:4px; color:#fbbf24; font-family:monospace; font-weight:900; animation:blink 900ms step-end infinite; }
+.typed-cursor-second { color:#fbbf24; }
+.typewriter-line-second { display:block; min-height:1.4em; min-width:10ch; animation:fadeIn 700ms ease-in-out; }
+
+/* Gooey navigation: the SVG filter creates the liquid merge while this spring curve gives the capsule a soft overshoot. */
+.liquid-indicator { transition: x 520ms cubic-bezier(.22,1.45,.36,1), width 520ms cubic-bezier(.22,1.45,.36,1); transform-origin:center; }
+
+@keyframes blink { 50% { opacity:0; } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior:auto; }
+  .liquid-indicator { transition:none; }
 }
 
-.typed-text {
-  display: inline-block;
-}
-
-.typed-cursor {
-  display: inline-block;
-  margin-left: 4px;
-  color: #fbbf24;
-  font-family: monospace;
-  font-weight: 900;
-  animation: blink 900ms step-end infinite;
-}
-
-.typed-cursor-second {
-  color: #fbbf24;
-}
-
-.typewriter-line-second {
-  display: block;
-  min-height: 1.4em;
-  min-width: 10ch;
-  animation: fadeIn 700ms ease-in-out;
-}
-
-.liquid-nav-link {
-  position: relative;
-  overflow: hidden;
-  min-width: 44px;
-  color: #334155;
-  background: transparent;
-  border-radius: 999px;
-}
-
-.liquid-nav-link::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #34a853 0%, #0f9d58 100%);
-  transform: translateX(-110%);
-  transition: transform 560ms cubic-bezier(.2,.8,.2,1), opacity 260ms ease;
-  z-index: 0;
-}
-
-.liquid-nav-link::after {
-  content: '';
-  position: absolute;
-  left: 12%;
-  bottom: -9px;
-  width: 24px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(52, 168, 83, 0.7);
-  filter: blur(8px);
-  opacity: 0;
-  transform: scaleX(0.2);
-  transition: opacity 260ms ease, transform 420ms ease;
-}
-
-.liquid-nav-link:hover {
-  color: #065f46;
-}
-
-.liquid-nav-link:hover::before,
-.liquid-nav-link.active::before {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.liquid-nav-link:hover::after,
-.liquid-nav-link.active::after {
-  opacity: 1;
-  transform: scaleX(1.2);
-}
-
-.liquid-nav-link.active {
-  color: #ffffff;
-  background: rgba(52, 168, 83, 0.12);
-  box-shadow: 0 0 0 1px rgba(52, 168, 83, 0.35), inset 0 0 12px rgba(52, 168, 83, 0.3);
-}
-
-.liquid-nav-label {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.liquid-nav-label i {
-  margin-right: 8px;
-}
-
-.liquid-nav-link:hover .liquid-nav-label,
-.liquid-nav-link.active .liquid-nav-label {
-  color: #ffffff;
-}
-
-.liquid-icon {
-  color: currentColor;
-  width: 1rem;
-  height: 1rem;
-  stroke-width: 2;
-}
-
-.liquid-drop {
-  position: absolute;
-  left: 50%;
-  top: -8px;
-  width: 10px;
-  height: 10px;
-  background: radial-gradient(circle at 30% 30%, #86efac, #0f9d58);
-  border-radius: 60% 0 60% 0;
-  transform: translate(-50%, -50%) scale(0.4) rotate(30deg);
-  opacity: 0;
-  transition: transform 420ms ease, opacity 260ms ease;
-}
-
-.liquid-nav-link:hover .liquid-drop,
-.liquid-nav-link.active .liquid-drop {
-  opacity: 1;
-  transform: translate(-50%, 18px) scale(1.1) rotate(60deg);
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Custom subtle scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-track { background:#f1f5f9; }
+::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:9999px; }
+::-webkit-scrollbar-thumb:hover { background:#94a3b8; }

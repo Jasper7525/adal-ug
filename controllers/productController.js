@@ -3,7 +3,7 @@ import path from 'path';
 import { query } from '../db/postgres.js';
 import { uploadDir } from '../config/upload.js';
 
-const defaultProducts = [
+export const defaultProducts = [
   { id: 1, code: '3KG', name: '3kg Camping Cylinder', size: '3kg', category: '3kg', price: 32000, description: 'Portable LPG cylinder', image_url: '/uploads/default-3kg.jpg' },
   { id: 2, code: '6KG', name: '6kg Domestic Cylinder', size: '6kg', category: '6kg', price: 55000, description: 'Household LPG cylinder', image_url: '/uploads/default-6kg.jpg' },
   { id: 3, code: '12.5KG', name: '12.5kg Family Cylinder', size: '12.5kg', category: '12.5kg', price: 90000, description: 'Family LPG cylinder', image_url: '/uploads/default-12.5kg.jpg' },
@@ -11,11 +11,18 @@ const defaultProducts = [
   { id: 5, code: 'ACCESSORIES', name: 'Accessories', size: 'accessories', category: 'accessories', price: 0, description: 'Gas accessories and safety kit', image_url: '/uploads/default-accessories.jpg' },
 ];
 
+const normalizeCode = (value) => String(value || '').trim().toUpperCase().replace(/\s+/g, '-');
+const normalizeCategory = (value) => String(value || 'cylinder').trim().toLowerCase();
+const getProductStore = (app) => {
+  if (!app.locals.productStore) {
+    app.locals.productStore = defaultProducts.map((product) => ({ ...product }));
+  }
+  return app.locals.productStore;
+};
+
 export async function getProducts(req, res) {
   try {
-    if (!process.env.DATABASE_URL) {
-      return res.json(defaultProducts);
-    }
+    if (!process.env.DATABASE_URL) return res.json(getProductStore(req.app));
 
     const result = await query(`
       SELECT p.id, p.code, p.name, p.size, p.category, p.price, p.description,
@@ -23,19 +30,116 @@ export async function getProducts(req, res) {
              p.created_at
       FROM adal_products p
       LEFT JOIN LATERAL (
-        SELECT image_url
-        FROM adal_product_images
+        SELECT image_url FROM adal_product_images
         WHERE product_code = p.code
-        ORDER BY uploaded_at DESC, id DESC
-        LIMIT 1
+        ORDER BY uploaded_at DESC, id DESC LIMIT 1
       ) pi ON true
       ORDER BY p.id ASC
     `);
 
-    return res.json(result.rows.map(row => ({
+    return res.json(result.rows.map((row) => ({
       ...row,
       image_url: row.image_url_from_db || row.image_url,
     })));
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export async function createProduct(req, res) {
+  try {
+    const { code, name, size, category, price, description, imageUrl } = req.body || {};
+    const normalizedCode = normalizeCode(code || name);
+    const numericPrice = Number(price);
+    if (!normalizedCode || !name) return res.status(400).json({ message: 'Product code and name are required.' });
+    if (!Number.isFinite(numericPrice) || numericPrice < 0) return res.status(400).json({ message: 'Price must be a valid non-negative number.' });
+
+    const product = {
+      code: normalizedCode,
+      name: String(name).trim(),
+      size: String(size || '').trim(),
+      category: normalizeCategory(category),
+      price: numericPrice,
+      description: String(description || '').trim(),
+      image_url: String(imageUrl || '').trim() || null,
+    };
+
+    if (!process.env.DATABASE_URL) {
+      const store = getProductStore(req.app);
+      if (store.some((item) => item.code === normalizedCode)) return res.status(409).json({ message: 'A product with this code already exists.' });
+      const created = { id: Math.max(0, ...store.map((item) => Number(item.id))) + 1, ...product };
+      store.push(created);
+      return res.status(201).json(created);
+    }
+
+    const result = await query(
+      `INSERT INTO adal_products (code, name, size, category, price, description, image_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [product.code, product.name, product.size, product.category, product.price, product.description, product.image_url]
+    );
+    return res.status(201).json(result.rows[0]);
+  } catch (error) {
+    if (error.code === '23505') return res.status(409).json({ message: 'A product with that code already exists.' });
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export async function updateProduct(req, res) {
+  try {
+    const productId = Number(req.params.id);
+    const { code, name, size, category, price, description, imageUrl } = req.body || {};
+    if (!Number.isInteger(productId)) return res.status(400).json({ message: 'Invalid product ID.' });
+    if (price !== undefined && (!Number.isFinite(Number(price)) || Number(price) < 0)) return res.status(400).json({ message: 'Price must be a valid non-negative number.' });
+
+    if (!process.env.DATABASE_URL) {
+      const store = getProductStore(req.app);
+      const product = store.find((item) => Number(item.id) === productId);
+      if (!product) return res.status(404).json({ message: 'Product not found.' });
+      Object.assign(product, {
+        code: code !== undefined ? normalizeCode(code) : product.code,
+        name: name !== undefined ? String(name).trim() : product.name,
+        size: size !== undefined ? String(size).trim() : product.size,
+        category: category !== undefined ? normalizeCategory(category) : product.category,
+        price: price !== undefined ? Number(price) : product.price,
+        description: description !== undefined ? String(description).trim() : product.description,
+        image_url: imageUrl !== undefined ? String(imageUrl).trim() || null : product.image_url,
+      });
+      return res.json(product);
+    }
+
+    const result = await query(
+      `UPDATE adal_products SET
+        code = COALESCE($1, code), name = COALESCE($2, name), size = COALESCE($3, size),
+        category = COALESCE($4, category), price = COALESCE($5, price),
+        description = COALESCE($6, description), image_url = COALESCE($7, image_url)
+       WHERE id = $8 RETURNING *`,
+      [code !== undefined ? normalizeCode(code) : null, name, size, category !== undefined ? normalizeCategory(category) : null,
+       price !== undefined ? Number(price) : null, description, imageUrl !== undefined ? String(imageUrl).trim() || null : null, productId]
+    );
+    if (!result.rows.length) return res.status(404).json({ message: 'Product not found.' });
+    return res.json(result.rows[0]);
+  } catch (error) {
+    if (error.code === '23505') return res.status(409).json({ message: 'A product with that code already exists.' });
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export async function deleteProduct(req, res) {
+  try {
+    const productId = Number(req.params.id);
+    if (!Number.isInteger(productId)) return res.status(400).json({ message: 'Invalid product ID.' });
+
+    if (!process.env.DATABASE_URL) {
+      const store = getProductStore(req.app);
+      const index = store.findIndex((item) => Number(item.id) === productId);
+      if (index < 0) return res.status(404).json({ message: 'Product not found.' });
+      store.splice(index, 1);
+      return res.json({ success: true, deletedId: productId });
+    }
+
+    const result = await query('DELETE FROM adal_products WHERE id = $1 RETURNING id', [productId]);
+    if (!result.rows.length) return res.status(404).json({ message: 'Product not found.' });
+    return res.json({ success: true, deletedId: productId });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -45,11 +149,8 @@ export async function getProductImages(req, res) {
   try {
     if (!process.env.DATABASE_URL) {
       const imageStore = req.app.locals.imageStore || [];
-      return res.json(imageStore.length > 0 ? imageStore : [
-        { id: 1, product_code: '3KG', image_url: '/uploads/default-3kg.jpg', image_name: '3kg Cylinder', mime_type: 'image/jpeg', size_bytes: 0, category: 'cylinder', price: 32000, description: '3kg cylinder image' },
-      ]);
+      return res.json(imageStore.length > 0 ? imageStore : []);
     }
-
     const result = await query('SELECT * FROM adal_product_images ORDER BY uploaded_at DESC');
     return res.json(result.rows);
   } catch (error) {
@@ -61,34 +162,27 @@ export async function updateProductImage(req, res) {
   try {
     const imageId = Number(req.params.id);
     const { productCode, category, imageName, price, description } = req.body || {};
+    if (!Number.isInteger(imageId)) return res.status(400).json({ message: 'Invalid image ID.' });
 
     if (!process.env.DATABASE_URL) {
       const imageStore = req.app.locals.imageStore || [];
-      const image = imageStore.find(item => item.id === imageId);
+      const image = imageStore.find((item) => Number(item.id) === imageId);
       if (!image) return res.status(404).json({ message: 'Image not found.' });
-
-      image.product_code = productCode || image.product_code;
-      image.category = category || image.category || 'cylinder';
+      image.product_code = productCode ? normalizeCode(productCode) : image.product_code;
+      image.category = category ? normalizeCategory(category) : image.category || 'cylinder';
       image.image_name = imageName || image.image_name;
       image.price = Number(price ?? image.price ?? 0);
-      image.description = description || image.description || '';
-
+      image.description = description ?? image.description ?? '';
       return res.json({ success: true, updated: image });
     }
 
     const result = await query(
-      `UPDATE adal_product_images
-       SET product_code = COALESCE($1, product_code),
-           category = COALESCE($2, category),
-           image_name = COALESCE($3, image_name),
-           price = COALESCE($4, price),
-           description = COALESCE($5, description)
-       WHERE id = $6
-       RETURNING *`,
-      [productCode, category, imageName, Number(price ?? 0), description, imageId]
+      `UPDATE adal_product_images SET product_code = COALESCE($1, product_code), category = COALESCE($2, category),
+       image_name = COALESCE($3, image_name), price = COALESCE($4, price), description = COALESCE($5, description)
+       WHERE id = $6 RETURNING *`,
+      [productCode ? normalizeCode(productCode) : null, category ? normalizeCategory(category) : null, imageName, price !== undefined ? Number(price) : null, description, imageId]
     );
-
-    if (result.rows.length === 0) return res.status(404).json({ message: 'Image not found.' });
+    if (!result.rows.length) return res.status(404).json({ message: 'Image not found.' });
     return res.json({ success: true, updated: result.rows[0] });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -98,7 +192,7 @@ export async function updateProductImage(req, res) {
 export async function deleteProductImage(req, res) {
   try {
     const imageId = Number(req.params.id);
-    const removeFile = imageUrl => {
+    const removeFile = (imageUrl) => {
       if (!imageUrl) return;
       const filePath = path.join(uploadDir, path.basename(imageUrl));
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
@@ -106,20 +200,16 @@ export async function deleteProductImage(req, res) {
 
     if (!process.env.DATABASE_URL) {
       const imageStore = req.app.locals.imageStore || [];
-      const index = imageStore.findIndex(image => Number(image.id) === imageId);
-      if (index >= 0) {
-        removeFile(imageStore[index].image_url);
-        imageStore.splice(index, 1);
-      }
+      const index = imageStore.findIndex((image) => Number(image.id) === imageId);
+      if (index < 0) return res.status(404).json({ message: 'Image not found.' });
+      removeFile(imageStore[index].image_url);
+      imageStore.splice(index, 1);
       return res.json({ success: true, deletedId: imageId });
     }
 
-    const result = await query(
-      'DELETE FROM adal_product_images WHERE id = $1 RETURNING image_url, image_name',
-      [imageId]
-    );
-
-    if (result.rows.length > 0) removeFile(result.rows[0].image_url);
+    const result = await query('DELETE FROM adal_product_images WHERE id = $1 RETURNING image_url', [imageId]);
+    if (!result.rows.length) return res.status(404).json({ message: 'Image not found.' });
+    removeFile(result.rows[0].image_url);
     return res.json({ success: true, deletedId: imageId });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -128,43 +218,33 @@ export async function deleteProductImage(req, res) {
 
 export async function uploadImage(req, res) {
   try {
-    const productCode = String(req.body.productCode || 'ACCESSORIES').toUpperCase();
-    const category = String(req.body.category || 'cylinder').toLowerCase();
+    const productCode = normalizeCode(req.body.productCode || 'ACCESSORIES');
+    const category = normalizeCategory(req.body.category || 'cylinder');
     const imageName = String(req.body.imageName || req.file?.originalname || 'Uploaded image');
     const price = Number(req.body.price || 0);
     const description = String(req.body.description || '');
     const file = req.file;
-
     if (!file) return res.status(400).json({ message: 'No image file provided.' });
+    if (!Number.isFinite(price) || price < 0) return res.status(400).json({ message: 'Price must be a valid non-negative number.' });
 
     const imageUrl = `/uploads/${file.filename}`;
-
     if (!process.env.DATABASE_URL) {
       const imageStore = req.app.locals.imageStore || [];
       const image = {
-        id: req.app.locals.imageStoreSequence++,
-        product_code: productCode,
-        category,
-        image_url: imageUrl,
-        image_name: imageName,
-        mime_type: file.mimetype,
-        size_bytes: file.size,
-        uploaded_at: new Date().toISOString(),
-        price,
-        description,
+        id: req.app.locals.imageStoreSequence++, product_code: productCode, category, image_url: imageUrl,
+        image_name: imageName, mime_type: file.mimetype, size_bytes: file.size,
+        uploaded_at: new Date().toISOString(), price, description,
       };
       imageStore.push(image);
-      return res.json({ success: true, imageUrl, fileName: imageName, productCode, category, price, description });
+      return res.status(201).json({ success: true, ...image });
     }
 
-    await query(
-      `INSERT INTO adal_product_images
-       (product_code, category, image_url, image_name, mime_type, size_bytes, price, description)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    const result = await query(
+      `INSERT INTO adal_product_images (product_code, category, image_url, image_name, mime_type, size_bytes, price, description)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
       [productCode, category, imageUrl, imageName, file.mimetype, file.size, price, description]
     );
-
-    return res.json({ success: true, imageUrl, fileName: imageName, productCode, category, price, description });
+    return res.status(201).json({ success: true, ...result.rows[0] });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

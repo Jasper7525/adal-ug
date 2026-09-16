@@ -1,395 +1,81 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Star,
-  Phone,
-} from 'lucide-react';
-import { ACCESSORY_PRODUCTS } from '../data/products';
-import { Product, ProductCategory } from '../types';
+import { ChevronDown, ImageOff, Package, Phone, RefreshCw, ShieldCheck, Star, Wrench } from 'lucide-react';
 
-interface ProductCatalogProps {
-  onContactDepot: () => void;
-}
+interface ProductCatalogProps { onContactDepot: () => void; }
+interface CatalogProduct { id: number; code: string; name: string; size?: string; category: string; price: number; description?: string; image_url?: string; }
 
-interface CatalogApiProduct {
-  id: number;
-  code: string;
-  name: string;
-  size: string;
-  category: string;
-  price: number;
-  description: string;
-  image_url: string;
-}
+type Filter = 'all' | 'cylinders' | '3kg' | '6kg' | '12.5kg' | '38kg' | 'accessories';
 
-const defaultCatalogProducts: Product[] = [
-  {
-    id: 'lpg-3kg',
-    name: '3kg Compact LPG Cylinder',
-    category: '3kg',
-    sizeKg: 3,
-    description: 'Portable LPG cylinder',
-    bestFor: 'Students, Singles & Outdoor Camping',
-    burnDuration: 'Approx. 2–3 weeks (daily domestic use)',
-    refillPriceUGX: 32000,
-    completePriceUGX: 115000,
-    currentType: 'refill',
-    rating: 4.8,
-    reviewsCount: 142,
-    inStock: true,
-    image: '/uploads/default-3kg.jpg',
-    features: [],
-    specs: {
-      valveType: 'Compact Camping / Standard Screw 16mm',
-      tareWeight: '3.4 kg',
-      totalWeight: '6.4 kg (when filled)',
-      certification: 'UNBS Certified (US EAS 900)',
-    },
-  },
-  {
-    id: 'lpg-6kg',
-    name: '6kg Household Domestic Cylinder',
-    category: '6kg',
-    sizeKg: 6,
-    description: 'Household LPG cylinder',
-    bestFor: 'Small families, apartments, and couples',
-    burnDuration: 'Approx. 4–6 weeks (daily family cooking)',
-    refillPriceUGX: 55000,
-    completePriceUGX: 185000,
-    currentType: 'refill',
-    rating: 4.9,
-    reviewsCount: 388,
-    inStock: true,
-    image: '/uploads/default-6kg.jpg',
-    features: [],
-    specs: {
-      valveType: '20mm Compact Valve / Standard Household',
-      tareWeight: '6.5 kg',
-      totalWeight: '12.5 kg (when filled)',
-      certification: 'UNBS Certified (US EAS 900) & ISO 9001',
-    },
-  },
+const fallbackProducts: CatalogProduct[] = [
+  { id: 1, code: '3KG', name: '3kg Camping Cylinder', size: '3kg', category: '3kg', price: 32000, description: 'Portable LPG cylinder.', image_url: '/uploads/default-3kg.jpg' },
+  { id: 2, code: '6KG', name: '6kg Domestic Cylinder', size: '6kg', category: '6kg', price: 55000, description: 'Household LPG cylinder.', image_url: '/uploads/default-6kg.jpg' },
+  { id: 3, code: '12.5KG', name: '12.5kg Family Cylinder', size: '12.5kg', category: '12.5kg', price: 90000, description: 'Family LPG cylinder.', image_url: '/uploads/default-12.5kg.jpg' },
+  { id: 4, code: '38KG', name: '38kg Commercial Cylinder', size: '38kg', category: '38kg', price: 180000, description: 'Commercial LPG cylinder.', image_url: '/uploads/default-38kg.jpg' },
+  { id: 5, code: 'ACCESSORIES', name: 'Gas Accessories', size: 'accessories', category: 'accessories', price: 0, description: 'Gas accessories and safety equipment.', image_url: '/uploads/default-accessories.jpg' },
 ];
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onContactDepot }) => {
-  const [activeTab, setActiveTab] = useState<ProductCategory>('all');
-  const [openDetailsId, setOpenDetailsId] = useState<string | null>(null);
-  const [catalogProducts, setCatalogProducts] = useState<Product[]>(defaultCatalogProducts);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [products, setProducts] = useState<CatalogProduct[]>(fallbackProducts);
+  const [openId, setOpenId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const loadProducts = async () => {
+    setLoading(true);
     try {
       const response = await fetch('/api/products');
-      if (!response.ok) {
-        throw new Error('Could not load products');
-      }
-
-      const rows: CatalogApiProduct[] = await response.json();
-      if (!Array.isArray(rows) || rows.length === 0) {
-        setCatalogProducts(defaultCatalogProducts);
-        return;
-      }
-
-      const mapped = rows.map((row) => {
-        const fallbackCategory = row.category || row.size || '3kg';
-        const category = fallbackCategory as Product['category'];
-        const sizeMatch = String(row.size || '').match(/\d+(?:\.\d+)?/);
-        const sizeKg = sizeMatch ? Number(sizeMatch[0]) : undefined;
-
-        return {
-          id: String(row.id),
-          name: row.name,
-          category,
-          sizeKg,
-          description: row.description || '',
-          bestFor: `Bulk supply for ${row.name}`,
-          burnDuration: 'Available for scheduled delivery',
-          refillPriceUGX: Number(row.price || 0),
-          completePriceUGX: Number(row.price || 0),
-          currentType: 'refill',
-          rating: 4.9,
-          reviewsCount: 0,
-          inStock: true,
-          image: row.image_url || '/uploads/default-3kg.jpg',
-          features: [],
-          specs: {
-            valveType: 'Product supply selection',
-            tareWeight: '',
-            totalWeight: '',
-            certification: 'Adal Uganda Storefront',
-          },
-        } as Product;
-      });
-
-      setCatalogProducts(mapped);
-    } catch (error) {
-      setCatalogProducts(defaultCatalogProducts);
-    }
+      if (!response.ok) throw new Error('Catalogue unavailable');
+      const rows = await response.json();
+      if (Array.isArray(rows) && rows.length) setProducts(rows);
+    } catch { setProducts(fallbackProducts); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
+  useEffect(() => { loadProducts(); }, []);
 
-  const filteredCylinders = useMemo(() => {
-    return catalogProducts.filter((c) => {
-      if (activeTab === 'all' || activeTab === 'cylinders') return true;
-      return c.category === activeTab;
-    });
-  }, [activeTab, catalogProducts]);
+  const filtered = useMemo(() => products.filter(product => {
+    const category = String(product.category || '').toLowerCase();
+    if (filter === 'all') return true;
+    if (filter === 'cylinders') return category !== 'accessories' && category !== 'accessory';
+    return category === filter;
+  }), [products, filter]);
 
-  const showAccessories = activeTab === 'all' || activeTab === 'accessories';
+  const cylinders = filtered.filter(p => !['accessories', 'accessory'].includes(String(p.category).toLowerCase()));
+  const accessories = filtered.filter(p => ['accessories', 'accessory'].includes(String(p.category).toLowerCase()));
+  const formatUGX = (value: number) => value > 0 ? `UGX ${Number(value).toLocaleString('en-US')}` : 'Contact for price';
 
-  const formatUGX = (val: number) => {
-    return 'UGX ' + val.toLocaleString('en-US');
+  const ProductCard = ({ product, accessory = false }: { product: CatalogProduct; accessory?: boolean }) => {
+    const expanded = openId === product.id;
+    return (
+      <article className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+        <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onError={e => { e.currentTarget.style.display = 'none'; }} /> : <div className="h-full flex items-center justify-center"><ImageOff className="h-10 w-10 text-slate-300" /></div>}
+          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-slate-950/70 to-transparent"><span className="inline-flex rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase text-slate-800">{product.code}</span></div>
+        </div>
+        <div className="p-5 flex-1 flex flex-col">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-orange-600"><span>{accessory ? <Wrench className="inline h-3.5 w-3.5"/> : <Package className="inline h-3.5 w-3.5"/>} {product.category}</span><span className="text-slate-300">•</span><span className="text-emerald-600">Available</span></div>
+          <h3 className="mt-2 text-lg font-black text-slate-900">{product.name}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600 line-clamp-3">{product.description || 'Professional LPG supply item available from Adal Uganda.'}</p>
+          <div className="mt-4 pt-4 border-t border-slate-100"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Direct supply price</p><p className="text-xl font-black text-slate-900">{formatUGX(product.price)}</p></div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button onClick={() => setOpenId(expanded ? null : product.id)} className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-800 hover:bg-slate-50">Details <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} /></button>
+            <button onClick={onContactDepot} className="inline-flex items-center justify-center gap-1 rounded-xl bg-slate-900 px-3 py-2.5 text-xs font-black text-white hover:bg-orange-600"><Phone className="h-3.5 w-3.5 text-orange-400"/> Request</button>
+          </div>
+          {expanded && <div className="mt-3 rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600"><div className="flex items-center gap-2 font-bold text-slate-800"><ShieldCheck className="h-4 w-4 text-emerald-600"/> Product information</div><p className="mt-2">Code: <strong>{product.code}</strong>{product.size ? ` • Size: ${product.size}` : ''}</p><p className="mt-1">Contact Adal for current availability, delivery arrangements and any applicable refill/exchange terms.</p></div>}
+        </div>
+      </article>
+    );
   };
 
   return (
     <section id="catalog" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-display">
-              LPG Cylinders & Accessories
-            </h2>
-            <p className="mt-2 text-base text-slate-600 max-w-2xl">
-              Adal Uganda supplies cylinders and accessories through the Mbarara depot for gas points, kitchens and commercial service teams.
-            </p>
-          </div>
-
-          <button
-            onClick={onContactDepot}
-            className="inline-flex items-center gap-2 self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-md transition-colors"
-          >
-            <Phone className="w-4 h-4 text-orange-400" />
-            <span>Request Supply List</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 border-b border-slate-200 scrollbar-none">
-          {[
-            { id: 'all', label: 'All Catalog' },
-            { id: 'cylinders', label: 'All Cylinders' },
-            { id: '3kg', label: '3kg Compact' },
-            { id: '6kg', label: '6kg Domestic' },
-            { id: '12.5kg', label: '12.5kg Family' },
-            { id: '38kg', label: '38kg Commercial' },
-            { id: 'accessories', label: 'Safety Accessories' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as ProductCategory)}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-slate-900 to-cyan-950 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {filteredCylinders.length > 0 && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-900 font-display flex items-center gap-2">
-                <span>Cooking Gas Cylinders</span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-800">
-                  {filteredCylinders.length} Sizes Available
-                </span>
-              </h3>
-              <p className="text-xs text-slate-500 hidden sm:block">
-                Certified LPG stock for gas points and commercial kitchens
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredCylinders.map(product => {
-                return (
-                  <div
-                    key={product.id}
-                    className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
-
-                        <div className="absolute top-1 left-1 flex flex-wrap gap-1">
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-slate-900/90 text-white backdrop-blur-sm border border-slate-700">
-                            {product.sizeKg ?? product.category}kg LPG
-                          </span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-900/90 text-emerald-200 backdrop-blur-sm">
-                            In Stock
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            {product.bestFor}
-                          </span>
-                          <div className="flex items-center gap-1 text-[8px] text-amber-500 font-semibold">
-                            <Star className="w-3 h-3 fill-amber-400" />
-                            <span>{product.rating}</span>
-                            <span className="text-slate-400 text-[7px]">({product.reviewsCount})</span>
-                          </div>
-                        </div>
-
-                        <h4 className="text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display line-clamp-2">
-                          {product.name}
-                        </h4>
-
-                        <p className="text-xs text-slate-600 mt-1.5 line-clamp-2">
-                          {product.description}
-                        </p>
-
-                        <div className="mt-4 pt-3 border-t border-slate-100">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                            Direct Supply Price
-                          </span>
-                          <p className="text-xl font-extrabold text-slate-900 font-display">
-                            {formatUGX(product.refillPriceUGX)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-5 pt-0 space-y-2">
-                      <button
-                        onClick={() => {
-                          setOpenDetailsId(openDetailsId === product.id ? null : product.id);
-                        }}
-                        className="w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 border border-slate-300 bg-white hover:bg-slate-50 text-slate-900 shadow-sm"
-                        aria-expanded={openDetailsId === product.id}
-                      >
-                        <span>{openDetailsId === product.id ? 'Hide Details' : 'Details'}</span>
-                      </button>
-
-                      {openDetailsId === product.id && (
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-[11px] text-slate-700">
-                          <div className="mb-2 flex items-center justify-between border-b border-slate-200 pb-2">
-                            <span className="font-bold uppercase tracking-wide text-slate-500">Purchase Type</span>
-                            <span className="font-bold uppercase tracking-wide text-slate-500">UGX Price</span>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-semibold text-slate-700">Refill Only</span>
-                              <span className="font-bold text-slate-900">{formatUGX(product.refillPriceUGX)}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-semibold text-slate-700">Cylinder + Gas</span>
-                              <span className="font-bold text-slate-900">{formatUGX(product.completePriceUGX)}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="font-semibold text-slate-700">Complete Package</span>
-                              <span className="font-bold text-slate-900">{formatUGX(product.completePriceUGX + 100000)}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 border-t border-slate-200 pt-2 text-[10px] leading-5 text-slate-600">
-                            <span className="font-extrabold text-slate-900">Refill Exchange Notice:</span> Please ensure you have an empty cylinder of the same size ready for exchange upon delivery.
-                          </div>
-                        </div>
-                      )}
-
-                      <button
-                        onClick={onContactDepot}
-                        className="w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
-                      >
-                        <Phone className="w-3 h-3 text-orange-400" />
-                        <span>Request Supply</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {showAccessories && (
-          <div id="accessories">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 font-display flex items-center gap-2">
-                  <span>Safety Accessories</span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
-                    4 Safety Essentials
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  High-grade regulators, steel-braided safety hoses, stands and spark lighters
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {ACCESSORY_PRODUCTS.map(accessory => {
-                return (
-                  <div
-                    key={accessory.id}
-                    className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-                        <img
-                          src={accessory.image}
-                          alt={accessory.name}
-                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            Universal Compatibility
-                          </span>
-                          <div className="flex items-center gap-1 text-xs text-amber-500 font-semibold">
-                            <Star className="w-3.5 h-3.5 fill-amber-400" />
-                            <span>{accessory.rating}</span>
-                          </div>
-                        </div>
-
-                        <h4 className="text-base font-bold text-slate-900 group-hover:text-cyan-800 transition-colors font-display line-clamp-2">
-                          {accessory.name}
-                        </h4>
-
-                        <p className="text-xs text-slate-600 mt-1.5 line-clamp-2">
-                          {accessory.description}
-                        </p>
-
-                        <div className="mt-4 pt-3 border-t border-slate-100">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                            Direct Unit Price
-                          </span>
-                          <p className="text-xl font-extrabold text-slate-900 font-display">
-                            {formatUGX(accessory.priceUGX)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-5 pt-0">
-                      <button
-                        onClick={onContactDepot}
-                        className="w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
-                      >
-                        <Phone className="w-4 h-4 text-orange-400" />
-                        <span>Request Accessory</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"><div><div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-orange-600"><Package className="h-4 w-4"/> Adal Catalogue</div><h2 className="mt-2 text-3xl sm:text-4xl font-black text-slate-900 font-display">LPG Cylinders & Accessories</h2><p className="mt-2 text-base text-slate-600 max-w-2xl">Browse current stock managed by the Adal operations team. Product names, prices, descriptions and images are connected to the admin catalogue.</p></div><button onClick={onContactDepot} className="inline-flex items-center gap-2 self-start rounded-xl bg-slate-900 px-5 py-3 text-sm font-black text-white hover:bg-orange-600"><Phone className="h-4 w-4 text-orange-400"/> Request Supply</button></div>
+        <div className="flex gap-2 overflow-x-auto pb-3 border-b border-slate-200 mb-10">{[['all','All'],['cylinders','Cylinders'],['3kg','3kg'],['6kg','6kg'],['12.5kg','12.5kg'],['38kg','38kg'],['accessories','Accessories']].map(([id,label]) => <button key={id} onClick={()=>setFilter(id as Filter)} className={`whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-black ${filter===id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{label}</button>)}</div>
+        {loading && <div className="flex items-center justify-center py-8 text-sm text-slate-500"><RefreshCw className="mr-2 h-4 w-4 animate-spin"/> Loading catalogue…</div>}
+        {!loading && cylinders.length > 0 && <div className="mb-14"><div className="flex items-center justify-between mb-6"><h3 className="text-xl font-black text-slate-900">Cooking Gas Cylinders</h3><span className="text-xs font-bold text-slate-500">{cylinders.length} item{cylinders.length===1?'':'s'}</span></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">{cylinders.map(product => <ProductCard key={product.id} product={product}/>)}</div></div>}
+        {!loading && accessories.length > 0 && <div><div className="flex items-center justify-between mb-6"><div><h3 className="text-xl font-black text-slate-900">Safety Accessories</h3><p className="mt-1 text-sm text-slate-500">Regulators, hoses, stands and other LPG support equipment.</p></div><span className="text-xs font-bold text-slate-500">{accessories.length} item{accessories.length===1?'':'s'}</span></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">{accessories.map(product => <ProductCard key={product.id} product={product} accessory/>)}</div></div>}
+        {!loading && filtered.length === 0 && <div className="py-16 text-center"><Package className="mx-auto h-10 w-10 text-slate-300"/><h3 className="mt-3 font-black text-slate-800">No items in this category</h3><p className="mt-1 text-sm text-slate-500">The admin can add new stock from the protected dashboard.</p></div>}
       </div>
     </section>
   );

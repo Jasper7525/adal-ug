@@ -1,0 +1,47 @@
+name: Adal CI
+
+on:
+  push:
+    branches: [main, 'refactor/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: adal
+          POSTGRES_PASSWORD: adal
+          POSTGRES_DB: adal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U adal -d adal"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://adal:adal@localhost:5432/adal
+      NODE_ENV: test
+      ADMIN_USERNAME: ci-admin
+      ADMIN_PASSWORD: ci-password
+      PORT: 3001
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run lint
+      - name: Build frontend
+        run: npm run build
+      - name: End-to-end API verification
+        run: npm run test:e2e

@@ -8,6 +8,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import systemRoutes from './routes/systemRoutes.js';
+import contentRoutes from './routes/contentRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,8 @@ app.locals.adminSessions = new Map();
 app.locals.visitorStore = [];
 app.locals.imageStore = [];
 app.locals.imageStoreSequence = 1;
+app.locals.contentStore = [];
+app.locals.mediaStore = [];
 app.use(express.json({ limit: '5mb' }));
 
 app.use((req, _res, next) => {
@@ -42,6 +45,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', productRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', systemRoutes);
+app.use('/api', contentRoutes);
 
 app.use((error, _req, res, next) => {
   if (res.headersSent) return next(error);

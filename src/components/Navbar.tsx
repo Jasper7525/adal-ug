@@ -1,219 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Phone, Menu, X, MapPin, ChevronRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Menu, X, MapPin, ChevronDown, House, Flame, Wrench, ShieldCheck, Newspaper, Phone } from 'lucide-react';
 import { AdalLogo } from './AdalLogo';
-
-interface NavbarProps {
-  onNavigate: (sectionId: string) => void;
-}
-
-interface NavItem {
-  label: string;
-  target: string;
-  iconClass: string;
-}
-
+interface NavbarProps { onNavigate: (sectionId: string) => void; }
+interface NavItem { label: string; target: string; icon: React.ElementType; }
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
-
+  const [isScrolled, setIsScrolled] = useState(false); const [mobileMenuOpen, setMobileMenuOpen] = useState(false); const [activeSection, setActiveSection] = useState('home');
+  const navRef = useRef<HTMLElement | null>(null); const [indicator, setIndicator] = useState({ x: 0, width: 0 });
   const navLinks: NavItem[] = [
-    { label: 'Home', target: 'home', iconClass: 'fa-solid fa-house' },
-    { label: 'Cylinders & Prices', target: 'catalog', iconClass: 'fa-solid fa-gas-pump' },
-    { label: 'Accessories', target: 'accessories', iconClass: 'fa-solid fa-cart-shopping' },
-    { label: 'Why Adal', target: 'features', iconClass: 'fa-solid fa-circle-info' },
-    { label: 'Safety Guide', target: 'features', iconClass: 'fa-solid fa-shield-heart' },
+    { label: 'Home', target: 'home', icon: House }, { label: 'Cylinders & Prices', target: 'catalog', icon: Flame }, { label: 'Accessories', target: 'accessories', icon: Wrench }, { label: 'Why Adal', target: 'features', icon: ShieldCheck }, { label: 'Safety Guide', target: 'safety-guide', icon: ShieldCheck }, { label: 'News & Updates', target: 'news', icon: Newspaper },
   ];
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const targets = navLinks.map(link => `#${link.target}`);
-    const sectionElements = targets
-      .map(selector => document.querySelector(selector))
-      .filter((element): element is Element => Boolean(element));
-
-    if (!sectionElements.length || !('IntersectionObserver' in window)) {
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      const visibleEntry = entries
-        .filter(entry => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-      if (visibleEntry) {
-        setActiveSection(visibleEntry.target.id);
-      }
-    }, {
-      rootMargin: '-15% 0px -65% 0px',
-      threshold: [0.25, 0.45, 0.7],
-    });
-
-    sectionElements.forEach(section => observer.observe(section));
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleLinkClick = (id: string) => {
-    setMobileMenuOpen(false);
-    setActiveSection(id);
-    onNavigate(id);
-  };
-
-  return (
-    <>
-      <div className="bg-slate-950 text-slate-200 text-xs py-2 px-4 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-2 text-center sm:text-left">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-medium text-[11px] border border-orange-500/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-              Adal TotalEnergies Distribution
-            </span>
-            <span className="text-slate-300">
-              LPG cylinders, accessories and gas-point supply from Mbarara depot
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span className="flex items-center gap-1 text-slate-300">
-              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-              Mbarara City, Uganda
-            </span>
-            <span className="hidden md:inline text-slate-600">�</span>
-            <a
-              href="tel:+256772123456"
-              className="flex items-center gap-1 font-semibold text-orange-400 hover:text-orange-300 transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              Hotline: +256 772 123 456
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <header
-        className={`sticky top-0 z-40 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-200/80 py-3'
-            : 'bg-white/80 backdrop-blur-sm border-b border-slate-100 py-4'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <a
-            href="#home"
-            onClick={(e) => {
-              e.preventDefault();
-              handleLinkClick('home');
-            }}
-            className="group flex items-center cursor-pointer select-none py-1 hover:opacity-95 transition-opacity"
-            id="nav-logo"
-            aria-label="Adal Energies - Return to top"
-          >
-            <AdalLogo variant="horizontal" size="md" />
-          </a>
-
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => {
-              const isActive = activeSection === link.target;
-
-              return (
-                <button
-                  key={link.target}
-                  onClick={() => handleLinkClick(link.target)}
-                  className={`liquid-nav-link relative text-sm font-semibold transition-colors py-2 px-3 rounded-full group ${
-                    isActive ? 'active' : ''
-                  }`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <span className="liquid-nav-label flex items-center">
-                    <i className={`${link.iconClass} liquid-icon`} aria-hidden="true" />
-                    <span>{link.label}</span>
-                  </span>
-                  <span className="liquid-drop" />
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="tel:+256772123456"
-              className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-cyan-800 bg-slate-100 hover:bg-slate-200/80 transition-colors border border-slate-200"
-              title="Call Mbarara Dispatch"
-            >
-              <Phone className="w-3.5 h-3.5 text-cyan-600" />
-              <span>Call Depot</span>
-            </a>
-
-            <button
-              onClick={() => handleLinkClick('contact')}
-              id="nav-contact-btn"
-              className="relative inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              <span>Contact Depot</span>
-            </button>
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors"
-              aria-label="Toggle Navigation Menu"
-              id="mobile-menu-toggle"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white/95 backdrop-blur-md px-4 pt-3 pb-6 shadow-xl animate-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col gap-2">
-              {navLinks.map((link) => {
-                const isActive = activeSection === link.target;
-
-                return (
-                  <button
-                    key={link.target}
-                    onClick={() => handleLinkClick(link.target)}
-                    className={`flex items-center justify-between text-left py-2.5 px-3 rounded-lg text-sm font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                        : 'text-slate-700 hover:bg-slate-50 hover:text-cyan-700'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <i className={`${link.iconClass} w-4 h-4`} aria-hidden="true" />
-                      <span>{link.label}</span>
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </button>
-                );
-              })}
-
-              <div className="pt-3 mt-2 border-t border-slate-100 flex flex-col gap-2">
-                <a
-                  href="tel:+256772123456"
-                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold text-cyan-900 bg-cyan-50 border border-cyan-200"
-                >
-                  <Phone className="w-4 h-4 text-cyan-600" />
-                  Call Mbarara Depot: +256 772 123 456
-                </a>
-                <button
-                  onClick={() => handleLinkClick('contact')}
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-600 shadow-md"
-                >
-                  Contact Depot
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </header>
-    </>
-  );
+  const updateIndicator = () => { const active = navRef.current?.querySelector<HTMLElement>(`[data-nav-target="${activeSection}"]`); if (!active || !navRef.current) return; const parent = navRef.current.getBoundingClientRect(); const rect = active.getBoundingClientRect(); setIndicator({ x: rect.left - parent.left, width: rect.width }); };
+  useEffect(() => { const handleScroll = () => setIsScrolled(window.scrollY > 20); window.addEventListener('scroll', handleScroll, { passive: true }); window.addEventListener('resize', updateIndicator); return () => { window.removeEventListener('scroll', handleScroll); window.removeEventListener('resize', updateIndicator); }; }, [activeSection]);
+  useEffect(() => { const timer = window.setTimeout(updateIndicator, 0); return () => window.clearTimeout(timer); }, [activeSection]);
+  useEffect(() => { const sections = navLinks.map(link => document.getElementById(link.target)).filter((el): el is HTMLElement => Boolean(el)); if (!sections.length || !('IntersectionObserver' in window)) return; const observer = new IntersectionObserver(entries => { const visible = entries.filter(entry => entry.isIntersecting).sort((a,b) => b.intersectionRatio-a.intersectionRatio)[0]; if (visible) setActiveSection(visible.target.id); }, { rootMargin: '-18% 0px -65% 0px', threshold: [0.2,0.45,0.7] }); sections.forEach(section => observer.observe(section)); return () => observer.disconnect(); }, []);
+  const handleLinkClick = (id: string) => { setMobileMenuOpen(false); setActiveSection(id); onNavigate(id); };
+  return <>
+    <div className="bg-slate-950 text-slate-200 text-xs py-2 px-4 border-b border-slate-800"><div className="max-w-7xl mx-auto flex items-center justify-center sm:justify-between gap-2"><span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/15 text-orange-300 font-semibold border border-orange-500/20"><span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" /> Adal LPG Supply & Service</span><span className="hidden sm:flex items-center gap-1.5 text-slate-400"><MapPin className="w-3.5 h-3.5 text-cyan-400" /> Mbarara City, Uganda</span></div></div>
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-white/92 backdrop-blur-xl shadow-md border-b border-slate-200 py-2.5' : 'bg-white/85 backdrop-blur-lg border-b border-slate-100 py-3.5'}`}><div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-3"><button onClick={() => handleLinkClick('home')} className="shrink-0 cursor-pointer select-none hover:opacity-90 transition-opacity" aria-label="Adal Energies home"><AdalLogo variant="horizontal" size="md" /></button>
+      <nav ref={navRef} className="hidden xl:flex relative items-center gap-1 p-1.5 rounded-full bg-slate-100/80 border border-slate-200/80" aria-label="Primary navigation"><svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" aria-hidden="true"><defs><filter id="adal-gooey-nav" x="-30%" y="-100%" width="160%" height="300%" colorInterpolationFilters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0.35 0 0 0 0.25  0 0 0 0 0  0 0 0 24 -10" result="goo" /><feGaussianBlur in="goo" stdDeviation="1.2" /></filter></defs><rect x={indicator.x} y="5" width={indicator.width} height="calc(100% - 10px)" rx="999" fill="#f97316" filter="url(#adal-gooey-nav)" className="liquid-indicator" /></svg>{navLinks.map(({label,target,icon:Icon}) => { const active=activeSection===target; return <button key={target} data-nav-target={target} onClick={() => handleLinkClick(target)} className={`relative z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 text-[12px] font-bold transition-colors duration-200 ${active?'text-white':'text-slate-700 hover:text-orange-700'}`} aria-current={active?'page':undefined}><Icon className="w-3.5 h-3.5"/><span>{label}</span></button>; })}</nav>
+      <div className="flex items-center gap-2 shrink-0"><button onClick={() => handleLinkClick('contact')} className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/20 transition-all">Contact Depot</button><button onClick={() => setMobileMenuOpen(value=>!value)} className="xl:hidden p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200" aria-label="Toggle navigation menu" aria-expanded={mobileMenuOpen}>{mobileMenuOpen?<X className="w-5 h-5"/>:<Menu className="w-5 h-5"/>}</button></div></div>
+      {mobileMenuOpen && <div className="xl:hidden mt-3 border-t border-slate-200 bg-white/98 backdrop-blur-xl px-3 sm:px-6 pt-3 pb-5 shadow-xl"><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{navLinks.map(({label,target,icon:Icon})=>{const active=activeSection===target;return <button key={target} onClick={()=>handleLinkClick(target)} className={`flex items-center gap-3 text-left px-4 py-3.5 rounded-2xl border transition-all ${active?'bg-orange-500 text-white border-orange-500 shadow-md':'bg-slate-50 text-slate-800 border-slate-200 hover:border-orange-200 hover:bg-orange-50'}`}><Icon className="w-5 h-5 shrink-0"/><span className="font-bold text-sm">{label}</span><ChevronDown className="ml-auto w-4 h-4 -rotate-90 opacity-60"/></button>;})}<button onClick={()=>handleLinkClick('contact')} className="flex items-center gap-3 text-left px-4 py-3.5 rounded-2xl bg-slate-900 text-white sm:col-span-2"><Phone className="w-5 h-5 text-orange-400"/><span className="font-bold text-sm">Contact Depot</span></button></div><div className="mt-3 text-center text-xs text-slate-400">Tap a section to jump directly to it.</div></div>}
+    </header>
+  </>;
 };

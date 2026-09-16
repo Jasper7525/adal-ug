@@ -13,12 +13,8 @@ export async function query(text, params = []) {
 
 export async function healthCheck() {
   if (!pool) return { status: 'not-configured', database: 'postgres', message: 'DATABASE_URL is not set.' };
-  try {
-    const result = await pool.query('SELECT NOW() as current_time');
-    return { status: 'ok', database: 'postgres', connectedAt: result.rows[0].current_time };
-  } catch (error) {
-    return { status: 'error', database: 'postgres', message: error.message };
-  }
+  try { const result = await pool.query('SELECT NOW() as current_time'); return { status: 'ok', database: 'postgres', connectedAt: result.rows[0].current_time }; }
+  catch (error) { return { status: 'error', database: 'postgres', message: error.message }; }
 }
 
 export async function initializeSchema() {
@@ -46,6 +42,20 @@ export async function initializeSchema() {
     id SERIAL PRIMARY KEY, method VARCHAR(12), path VARCHAR(255), ip VARCHAR(64), user_agent TEXT,
     referrer VARCHAR(255), status_code INTEGER, visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS adal_content_items (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(30) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    body TEXT DEFAULT '',
+    image_url VARCHAR(255),
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    published BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_adal_content_type ON adal_content_items(type, published, sort_order)`);
+
   const defaults = [
     ['3KG','3kg Camping Cylinder','3kg','3kg',32000,'Portable LPG cylinder','/uploads/default-3kg.jpg'],
     ['6KG','6kg Domestic Cylinder','6kg','6kg',55000,'Household LPG cylinder','/uploads/default-6kg.jpg'],
@@ -53,8 +63,5 @@ export async function initializeSchema() {
     ['38KG','38kg Commercial Cylinder','38kg','38kg',180000,'Commercial LPG cylinder','/uploads/default-38kg.jpg'],
     ['ACCESSORIES','Gas Accessories','accessories','accessories',0,'Gas accessories and safety equipment','/uploads/default-accessories.jpg'],
   ];
-  for (const product of defaults) {
-    await pool.query(`INSERT INTO adal_products (code,name,size,category,price,description,image_url)
-      VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (code) DO NOTHING`, product);
-  }
+  for (const product of defaults) await pool.query(`INSERT INTO adal_products (code,name,size,category,price,description,image_url) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (code) DO NOTHING`, product);
 }

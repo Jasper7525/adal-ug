@@ -6,6 +6,13 @@ import { uploadDir } from '../config/upload.js';
 const TYPES = new Set(['news', 'staff', 'gallery', 'feature']);
 const normalizeType = (value) => String(value || '').trim().toLowerCase();
 const store = (app) => { if (!app.locals.contentStore) app.locals.contentStore = []; return app.locals.contentStore; };
+const mediaStore = (app) => { if (!app.locals.mediaStore) app.locals.mediaStore = []; return app.locals.mediaStore; };
+const mediaUrl = (filename) => `/uploads/${filename}`;
+const removeFile = (url) => {
+  if (!url || !String(url).startsWith('/uploads/')) return;
+  const file = path.join(uploadDir, path.basename(url));
+  if (fs.existsSync(file)) fs.unlinkSync(file);
+};
 
 export async function getContent(req, res) {
   try {
@@ -64,13 +71,47 @@ export async function updateContent(req, res) {
 export async function deleteContent(req, res) {
   try {
     const id = Number(req.params.id); if (!Number.isInteger(id)) return res.status(400).json({ message: 'Invalid content ID.' });
-    const removeFile = (url) => { if (!url) return; const file = path.join(uploadDir, path.basename(url)); if (fs.existsSync(file)) fs.unlinkSync(file); };
-    if (!process.env.DATABASE_URL) { const items = store(req.app); const index = items.findIndex(x => Number(x.id) === id); if (index < 0) return res.status(404).json({ message: 'Content item not found.' }); removeFile(items[index].image_url); items.splice(index,1); return res.json({ success:true, deletedId:id }); }
-    const result = await query('DELETE FROM adal_content_items WHERE id=$1 RETURNING image_url',[id]); if (!result.rows.length) return res.status(404).json({ message:'Content item not found.' }); removeFile(result.rows[0].image_url); return res.json({ success:true, deletedId:id });
+    if (!process.env.DATABASE_URL) { const items = store(req.app); const index = items.findIndex(x => Number(x.id) === id); if (index < 0) return res.status(404).json({ message: 'Content item not found.' }); items.splice(index,1); return res.json({ success:true, deletedId:id }); }
+    const result = await query('DELETE FROM adal_content_items WHERE id=$1 RETURNING image_url',[id]); if (!result.rows.length) return res.status(404).json({ message:'Content item not found.' }); return res.json({ success:true, deletedId:id });
   } catch (error) { return res.status(500).json({ message: error.message }); }
 }
 
+export async function getMedia(req, res) {
+  try {
+    if (!process.env.DATABASE_URL) return res.json(mediaStore(req.app).sort((a,b) => new Date(b.uploaded_at)-new Date(a.uploaded_at)));
+    const result = await query('SELECT id,image_url,image_name,mime_type,size_bytes,uploaded_at FROM adal_media ORDER BY uploaded_at DESC');
+    return res.json(result.rows);
+  } catch (error) { return res.status(500).json({ message: error.message }); }
+}
+
+export async function uploadMedia(req, res) {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No image file provided.' });
+    const item = { image_url: mediaUrl(req.file.filename), image_name: req.file.originalname, mime_type: req.file.mimetype, size_bytes: req.file.size };
+    if (!process.env.DATABASE_URL) {
+      const media = { id: Math.max(0, ...mediaStore(req.app).map(x => Number(x.id))) + 1, ...item, uploaded_at: new Date().toISOString() };
+      mediaStore(req.app).push(media); return res.status(201).json(media);
+    }
+    const result = await query('INSERT INTO adal_media (image_url,image_name,mime_type,size_bytes) VALUES ($1,$2,$3,$4) RETURNING *',[item.image_url,item.image_name,item.mime_type,item.size_bytes]);
+    return res.status(201).json(result.rows[0]);
+  } catch (error) { if (req.file) removeFile(mediaUrl(req.file.filename)); return res.status(500).json({ message: error.message }); }
+}
+
+export async function deleteMedia(req, res) {
+  try {
+    const id = Number(req.params.id); if (!Number.isInteger(id)) return res.status(400).json({ message:'Invalid media ID.' });
+    if (!process.env.DATABASE_URL) {
+      const items = mediaStore(req.app); const index = items.findIndex(x => Number(x.id) === id); if (index < 0) return res.status(404).json({ message:'Media item not found.' });
+      const media = items[index]; const used = store(req.app).some(x => x.image_url === media.image_url); if (used) return res.status(409).json({ message:'This image is currently used by website content and cannot be deleted.' });
+      removeFile(media.image_url); items.splice(index,1); return res.json({ success:true, deletedId:id });
+    }
+    const usage = await query('SELECT COUNT(*)::int AS count FROM adal_content_items WHERE image_url=$1',[await (async()=>{const r=await query('SELECT image_url FROM adal_media WHERE id=$1',[id]); if(!r.rows.length) return null; return r.rows[0].image_url;})()]);
+    if (!usage.rows.length || usage.rows[0].count > 0) return usage.rows.length && usage.rows[0].count > 0 ? res.status(409).json({ message:'This image is currently used by website content and cannot be deleted.' }) : res.status(404).json({ message:'Media item not found.' });
+    const result = await query('DELETE FROM adal_media WHERE id=$1 RETURNING image_url',[id]); if (!result.rows.length) return res.status(404).json({ message:'Media item not found.' }); removeFile(result.rows[0].image_url); return res.json({ success:true, deletedId:id });
+  } catch (error) { return res.status(500).json({ message:error.message }); }
+}
+
 export async function uploadContentImage(req, res) {
-  try { if (!req.file) return res.status(400).json({ message:'No image file provided.' }); return res.status(201).json({ success:true, image_url:`/uploads/${req.file.filename}`, image_name:req.file.originalname, mime_type:req.file.mimetype, size_bytes:req.file.size }); }
+  try { if (!req.file) return res.status(400).json({ message:'No image file provided.' }); return res.status(201).json({ success:true, image_url:mediaUrl(req.file.filename), image_name:req.file.originalname, mime_type:req.file.mimetype, size_bytes:req.file.size }); }
   catch (error) { return res.status(500).json({ message:error.message }); }
 }

@@ -52,11 +52,18 @@ export async function deleteProductImage(req,res){try{const imageId=Number(req.p
 
 export async function uploadImage(req,res){
   try{
-    const productCode=normalizeCode(req.body.productCode||'ACCESSORIES'); const category=normalizeCategory(req.body.category||'cylinder'); const imageName=String(req.body.imageName||req.file?.originalname||'Uploaded image'); const price=Number(req.body.price||0); const description=String(req.body.description||''); const file=req.file;
+    const rawProductCode=String(req.body.productCode||'').trim();
+    const category=normalizeCategory(req.body.category||'cylinder');
+    const imageName=String(req.body.imageName||req.file?.originalname||'Uploaded image').trim();
+    // Accessories are individual catalogue products. When the admin leaves the
+    // code blank, use the accessory name so the image belongs to the new item
+    // instead of being attached to the single legacy ACCESSORIES product.
+    const productCode=normalizeCode(rawProductCode || (category==='accessories' ? imageName : 'ACCESSORIES'));
+    const price=Number(req.body.price||0); const description=String(req.body.description||''); const file=req.file;
     if(!file)return res.status(400).json({message:'No image file provided.'}); if(!Number.isFinite(price)||price<0)return res.status(400).json({message:'Price must be a valid non-negative number.'});
     const imageData=await fs.promises.readFile(file.path);
     if(!process.env.DATABASE_URL){const imageStore=req.app.locals.imageStore||[];const image={id:req.app.locals.imageStoreSequence++,product_code:productCode,category,image_url:`/api/product-images/${imageStore.length+1}/file`,image_name:imageName,mime_type:file.mimetype,size_bytes:file.size,uploaded_at:new Date().toISOString(),price,description};imageStore.push(image);await fs.promises.unlink(file.path).catch(()=>{});return res.status(201).json({success:true,...image,product_updated:false});}
-    const result=await query(`INSERT INTO adal_product_images (product_code,category,image_url,image_name,mime_type,size_bytes,price,description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,[productCode,category,'',''+imageName,file.mimetype,file.size,price,description]);
+    const result=await query(`INSERT INTO adal_product_images (product_code,category,image_url,image_name,mime_type,size_bytes,price,description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,[productCode,category,'',imageName,file.mimetype,file.size,price,description]);
     const image=result.rows[0]; const stableUrl=`/api/product-images/${image.id}/file`; await query('UPDATE adal_product_images SET image_url=$1 WHERE id=$2',[stableUrl,image.id]);
     await query('ALTER TABLE adal_product_images ADD COLUMN IF NOT EXISTS image_data BYTEA');
     await query('UPDATE adal_product_images SET image_data=$1 WHERE id=$2',[imageData,image.id]);

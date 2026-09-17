@@ -1,13 +1,27 @@
 import 'dotenv/config';
 import pg from 'pg';
+import { randomBytes, scryptSync } from 'crypto';
 const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL || '';
 export const databaseEnabled = Boolean(connectionString);
-const pool = databaseEnabled ? new Pool({ connectionString, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false }) : null;
+const pool = databaseEnabled ? new Pool({ connectionString, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' } : false }) : null;
 export async function query(text, params = []) { if (!pool) throw new Error('PostgreSQL database is not configured. Set DATABASE_URL before starting the server.'); return pool.query(text, params); }
 export async function healthCheck() { if (!pool) return { status:'not-configured', database:'postgres', message:'DATABASE_URL is not set.' }; try { const r=await pool.query('SELECT NOW() as current_time'); return {status:'ok',database:'postgres',connectedAt:r.rows[0].current_time}; } catch(e){return {status:'error',database:'postgres',message:e.message};} }
+export function hashAdminPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 64).toString('hex');
+  return `scrypt$${salt}$${hash}`;
+}
 export async function initializeSchema() {
   if (!pool) return;
+  await pool.query(`CREATE TABLE IF NOT EXISTS adal_admin_credentials (id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1), username VARCHAR(150) NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS adal_admin_sessions (id BIGSERIAL PRIMARY KEY, token_hash VARCHAR(128) UNIQUE NOT NULL, username VARCHAR(150) NOT NULL, expires_at TIMESTAMP NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_adal_admin_sessions_expiry ON adal_admin_sessions(expires_at)`);
+  const credentialCount = await pool.query(`SELECT COUNT(*)::int AS count FROM adal_admin_credentials`);
+  if (credentialCount.rows[0].count === 0 && process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+    await pool.query(`INSERT INTO adal_admin_credentials (id, username, password_hash) VALUES (1, $1, $2) ON CONFLICT (id) DO NOTHING`, [process.env.ADMIN_USERNAME, hashAdminPassword(process.env.ADMIN_PASSWORD)]);
+  }
+  await pool.query(`DELETE FROM adal_admin_sessions WHERE expires_at < CURRENT_TIMESTAMP`);
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_products (id SERIAL PRIMARY KEY, code VARCHAR(100) UNIQUE NOT NULL, name VARCHAR(150) NOT NULL, size VARCHAR(80), category VARCHAR(80), price NUMERIC(10,2) NOT NULL DEFAULT 0, description TEXT, image_url VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_product_images (id SERIAL PRIMARY KEY, product_code VARCHAR(100), category VARCHAR(80) DEFAULT 'cylinder', image_url VARCHAR(255) NOT NULL, image_name VARCHAR(150), mime_type VARCHAR(80), size_bytes INTEGER, price NUMERIC(10,2) DEFAULT 0, description TEXT, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`ALTER TABLE adal_product_images ADD COLUMN IF NOT EXISTS category VARCHAR(80) DEFAULT 'cylinder'`); await pool.query(`ALTER TABLE adal_product_images ADD COLUMN IF NOT EXISTS price NUMERIC(10,2) DEFAULT 0`); await pool.query(`ALTER TABLE adal_product_images ADD COLUMN IF NOT EXISTS description TEXT`);

@@ -27,14 +27,20 @@ export async function login(req, res) {
 
 export async function getSession(req, res) {
   try {
-    const token = req.cookies?.adal_admin_session;
-    if (!token) return res.status(401).json({ authenticated: false });
-    const result = await query(`SELECT username, expires_at FROM adal_admin_sessions WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP LIMIT 1`, [hashToken(token)]);
-    if (!result.rows[0]) {
+    const currentToken = req.cookies?.adal_admin_session;
+    if (!currentToken) return res.status(401).json({ authenticated: false });
+    const result = await query(`SELECT username, expires_at FROM adal_admin_sessions WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP LIMIT 1`, [hashToken(currentToken)]);
+    const session = result.rows[0];
+    if (!session) {
       res.clearCookie('adal_admin_session', secureCookieOptions());
       return res.status(401).json({ authenticated: false });
     }
-    return res.json({ authenticated: true, username: result.rows[0].username, expiresAt: result.rows[0].expires_at });
+    const token = randomBytes(32).toString('hex');
+    await query(`DELETE FROM adal_admin_sessions WHERE token_hash = $1`, [hashToken(currentToken)]);
+    await query(`INSERT INTO adal_admin_sessions (token_hash, username, expires_at) VALUES ($1,$2,$3)`, [hashToken(token), session.username, session.expires_at]);
+    const remainingMs = Math.max(1000, new Date(session.expires_at).getTime() - Date.now());
+    res.cookie('adal_admin_session', token, { ...secureCookieOptions(), maxAge: remainingMs });
+    return res.json({ authenticated: true, token, username: session.username, expiresAt: session.expires_at });
   } catch (error) {
     console.error('Admin session check failed:', error);
     return res.status(500).json({ authenticated: false, message: 'Unable to verify administrator session.' });

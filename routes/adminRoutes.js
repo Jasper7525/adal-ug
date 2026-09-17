@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, logout, resetPassword, getSession, getVisitors } from '../controllers/adminController.js';
+import { login, logout, resetPassword, changePassword, getSession, getVisitors } from '../controllers/adminController.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 
 const router = express.Router();
@@ -8,6 +8,7 @@ router.post('/login', login);
 router.get('/session', getSession);
 router.post('/logout', logout);
 router.post('/reset-password', resetPassword);
+router.post('/change-password', requireAdmin, changePassword);
 router.get('/visitors', requireAdmin, getVisitors);
 
 export default router;

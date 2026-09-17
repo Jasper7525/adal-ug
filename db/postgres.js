@@ -4,7 +4,13 @@ import { randomBytes, scryptSync } from 'crypto';
 const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL || '';
 export const databaseEnabled = Boolean(connectionString);
-const pool = databaseEnabled ? new Pool({ connectionString, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' } : false }) : null;
+const pool = databaseEnabled ? new Pool({
+  connectionString,
+  // Render's internal Postgres URL is on the private network and may use a
+  // self-signed certificate. Do not reject that certificate in production.
+  // External URLs should include ?sslmode=require in the URL when TLS is needed.
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+}) : null;
 export async function query(text, params = []) { if (!pool) throw new Error('PostgreSQL database is not configured. Set DATABASE_URL before starting the server.'); return pool.query(text, params); }
 export async function healthCheck() { if (!pool) return { status:'not-configured', database:'postgres', message:'DATABASE_URL is not set.' }; try { const r=await pool.query('SELECT NOW() as current_time'); return {status:'ok',database:'postgres',connectedAt:r.rows[0].current_time}; } catch(e){return {status:'error',database:'postgres',message:e.message};} }
 export function hashAdminPassword(password) { const salt = randomBytes(16).toString('hex'); const hash = scryptSync(password, salt, 64).toString('hex'); return `scrypt$${salt}$${hash}`; }

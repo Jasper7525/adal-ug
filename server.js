@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
-const uploadDir = path.join(__dirname, 'public', 'uploads');
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 app.set('trust proxy', 1);
@@ -70,7 +70,7 @@ app.get('*', (req, res, next) => {
 async function startServer() {
   try {
     await initializeSchema();
-    app.listen(PORT, () => console.log(`Adal Uganda Express server running on port ${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`Adal Uganda Express server running on port ${PORT}`));
   } catch (error) {
     console.error('PostgreSQL initialization failed:', error.message);
     process.exit(1);

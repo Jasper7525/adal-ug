@@ -7,11 +7,8 @@ export const databaseEnabled = Boolean(connectionString);
 const pool = databaseEnabled ? new Pool({ connectionString, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' } : false }) : null;
 export async function query(text, params = []) { if (!pool) throw new Error('PostgreSQL database is not configured. Set DATABASE_URL before starting the server.'); return pool.query(text, params); }
 export async function healthCheck() { if (!pool) return { status:'not-configured', database:'postgres', message:'DATABASE_URL is not set.' }; try { const r=await pool.query('SELECT NOW() as current_time'); return {status:'ok',database:'postgres',connectedAt:r.rows[0].current_time}; } catch(e){return {status:'error',database:'postgres',message:e.message};} }
-export function hashAdminPassword(password) {
-  const salt = randomBytes(16).toString('hex');
-  const hash = scryptSync(password, salt, 64).toString('hex');
-  return `scrypt$${salt}$${hash}`;
-}
+export function hashAdminPassword(password) { const salt = randomBytes(16).toString('hex'); const hash = scryptSync(password, salt, 64).toString('hex'); return `scrypt$${salt}$${hash}`; }
+function strongPassword(password) { return typeof password === 'string' && password.length >= 12 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password); }
 export async function initializeSchema() {
   if (!pool) return;
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_admin_credentials (id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1), username VARCHAR(150) NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
@@ -19,6 +16,7 @@ export async function initializeSchema() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_adal_admin_sessions_expiry ON adal_admin_sessions(expires_at)`);
   const credentialCount = await pool.query(`SELECT COUNT(*)::int AS count FROM adal_admin_credentials`);
   if (credentialCount.rows[0].count === 0 && process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+    if (!strongPassword(process.env.ADMIN_PASSWORD)) throw new Error('ADMIN_PASSWORD must be at least 12 characters and include uppercase, lowercase, number and symbol.');
     await pool.query(`INSERT INTO adal_admin_credentials (id, username, password_hash) VALUES (1, $1, $2) ON CONFLICT (id) DO NOTHING`, [process.env.ADMIN_USERNAME, hashAdminPassword(process.env.ADMIN_PASSWORD)]);
   }
   await pool.query(`DELETE FROM adal_admin_sessions WHERE expires_at < CURRENT_TIMESTAMP`);

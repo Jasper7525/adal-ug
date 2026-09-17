@@ -15,6 +15,7 @@ export default function App() {
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(() => window.location.hash === '#admin' || window.location.hash === '#admin-media');
   const [mediaOpen, setMediaOpen] = useState(() => window.location.hash === '#admin-media');
+  const [authVersion, setAuthVersion] = useState(0);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -30,7 +31,10 @@ export default function App() {
     fetch('/api/admin/session', { credentials: 'include' })
       .then(async response => response.ok ? response.json() : null)
       .then(session => {
-        if (session?.authenticated && session.token) sessionStorage.setItem('adalAdminToken', session.token);
+        if (session?.authenticated && session.token) {
+          sessionStorage.setItem('adalAdminToken', session.token);
+          setAuthVersion(value => value + 1);
+        }
       })
       .catch(() => {});
   }, [adminOpen]);
@@ -48,7 +52,7 @@ export default function App() {
     <div className="min-h-screen bg-white text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <Navbar onNavigate={scrollToSection} />
       <main className="flex-1 relative">
-        {mediaOpen ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage onClose={closeAdmin} /> : <>
+        {mediaOpen ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage key={authVersion} onClose={closeAdmin} /> : <>
           <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact-form')} />
           <SafetyFeatures />
           <ProductCatalog onContactDepot={() => scrollToSection('contact-form')} />

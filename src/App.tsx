@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { SafetyFeatures } from './components/SafetyFeatures';
@@ -12,17 +12,19 @@ import { MediaLibraryPage } from './components/MediaLibraryPage';
 import { PasswordManagementPage } from './components/PasswordManagementPage';
 import { NewsUpdates } from './components/NewsUpdates';
 
+const ADMIN_HASHES = ['#admin', '#admin-media', '#admin-reset', '#admin-change'];
+
 export default function App() {
   const [codeModalOpen, setCodeModalOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(() => ['#admin', '#admin-media', '#admin-reset', '#admin-change'].includes(window.location.hash));
+  const [adminOpen, setAdminOpen] = useState(() => ADMIN_HASHES.includes(window.location.hash));
   const [mediaOpen, setMediaOpen] = useState(() => window.location.hash === '#admin-media');
   const [passwordPage, setPasswordPage] = useState<'reset'|'change'|null>(() => window.location.hash === '#admin-reset' ? 'reset' : window.location.hash === '#admin-change' ? 'change' : null);
   const [authVersion, setAuthVersion] = useState(0);
   const [authenticated, setAuthenticated] = useState(false);
+  const wasAdminRoute = useRef(ADMIN_HASHES.includes(window.location.hash));
 
   useEffect(() => {
-    // Opening any administrator route always starts at the login screen.
-    // Do not silently restore an old browser token or session here.
+    // A fresh page visit to an admin URL must always start at login.
     if (adminOpen) {
       sessionStorage.removeItem('adalAdminToken');
       setAuthenticated(false);
@@ -31,16 +33,17 @@ export default function App() {
 
   useEffect(() => {
     const onHashChange = () => {
-      const isAdminRoute = ['#admin', '#admin-media', '#admin-reset', '#admin-change'].includes(window.location.hash);
+      const isAdminRoute = ADMIN_HASHES.includes(window.location.hash);
+      const enteringAdmin = isAdminRoute && !wasAdminRoute.current;
       setAdminOpen(isAdminRoute);
       setMediaOpen(window.location.hash === '#admin-media');
       setPasswordPage(window.location.hash === '#admin-reset' ? 'reset' : window.location.hash === '#admin-change' ? 'change' : null);
-      if (isAdminRoute) {
-        // Every new visit to an admin route requires credentials again.
+      if (enteringAdmin) {
         sessionStorage.removeItem('adalAdminToken');
         setAuthenticated(false);
         setAuthVersion(value => value + 1);
       }
+      wasAdminRoute.current = isAdminRoute;
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
@@ -57,17 +60,19 @@ export default function App() {
     if (sectionId === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const closeAdmin = () => { sessionStorage.removeItem('adalAdminToken'); setAuthenticated(false); setAdminOpen(false); setMediaOpen(false); setPasswordPage(null); window.location.hash = ''; };
+  const closeAdmin = () => { sessionStorage.removeItem('adalAdminToken'); setAuthenticated(false); setAdminOpen(false); setMediaOpen(false); setPasswordPage(null); wasAdminRoute.current = false; window.location.hash = ''; };
   const openMedia = () => { setMediaOpen(true); window.location.hash = '#admin-media'; };
   const openReset = () => { setPasswordPage('reset'); setAdminOpen(true); setMediaOpen(false); window.location.hash = '#admin-reset'; };
   const openChange = () => { setPasswordPage('change'); setAdminOpen(true); setMediaOpen(false); window.location.hash = '#admin-change'; };
   const backToAdmin = () => { setPasswordPage(null); setAdminOpen(true); setMediaOpen(false); window.location.hash = '#admin'; };
 
+  const adminView = passwordPage ? <PasswordManagementPage mode={passwordPage} onBack={backToAdmin} /> : mediaOpen && authenticated ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage key={authVersion} onClose={closeAdmin} /> : null;
+
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col selection:bg-orange-500 selection:text-white">
       <Navbar onNavigate={scrollToSection} />
       <main className="flex-1 relative">
-        {passwordPage ? <PasswordManagementPage mode={passwordPage} onBack={backToAdmin} /> : mediaOpen ? <MediaLibraryPage onClose={() => { setMediaOpen(false); setAdminOpen(true); window.location.hash = '#admin'; }} /> : adminOpen ? <AdminPage key={authVersion} onClose={closeAdmin} /> : <>
+        {adminOpen ? adminView : <>
           <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact-form')} />
           <SafetyFeatures />
           <ProductCatalog onContactDepot={() => scrollToSection('contact-form')} />

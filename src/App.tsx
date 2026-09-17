@@ -18,13 +18,29 @@ export default function App() {
   const [mediaOpen, setMediaOpen] = useState(() => window.location.hash === '#admin-media');
   const [passwordPage, setPasswordPage] = useState<'reset'|'change'|null>(() => window.location.hash === '#admin-reset' ? 'reset' : window.location.hash === '#admin-change' ? 'change' : null);
   const [authVersion, setAuthVersion] = useState(0);
-  const [authenticated, setAuthenticated] = useState(() => Boolean(sessionStorage.getItem('adalAdminToken')));
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Opening any administrator route always starts at the login screen.
+    // Do not silently restore an old browser token or session here.
+    if (adminOpen) {
+      sessionStorage.removeItem('adalAdminToken');
+      setAuthenticated(false);
+    }
+  }, []);
 
   useEffect(() => {
     const onHashChange = () => {
-      setAdminOpen(['#admin', '#admin-media', '#admin-reset', '#admin-change'].includes(window.location.hash));
+      const isAdminRoute = ['#admin', '#admin-media', '#admin-reset', '#admin-change'].includes(window.location.hash);
+      setAdminOpen(isAdminRoute);
       setMediaOpen(window.location.hash === '#admin-media');
       setPasswordPage(window.location.hash === '#admin-reset' ? 'reset' : window.location.hash === '#admin-change' ? 'change' : null);
+      if (isAdminRoute) {
+        // Every new visit to an admin route requires credentials again.
+        sessionStorage.removeItem('adalAdminToken');
+        setAuthenticated(false);
+        setAuthVersion(value => value + 1);
+      }
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
@@ -34,20 +50,6 @@ export default function App() {
     const timer = window.setInterval(() => setAuthenticated(Boolean(sessionStorage.getItem('adalAdminToken'))), 400);
     return () => window.clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    if (!adminOpen || passwordPage || sessionStorage.getItem('adalAdminToken')) return;
-    fetch('/api/admin/session', { credentials: 'include' })
-      .then(async response => response.ok ? response.json() : null)
-      .then(session => {
-        if (session?.authenticated && session.token) {
-          sessionStorage.setItem('adalAdminToken', session.token);
-          setAuthenticated(true);
-          setAuthVersion(value => value + 1);
-        }
-      })
-      .catch(() => {});
-  }, [adminOpen, passwordPage]);
 
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);

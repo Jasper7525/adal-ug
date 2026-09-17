@@ -25,13 +25,23 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (!adminOpen || sessionStorage.getItem('adalAdminToken')) return;
+    fetch('/api/admin/session', { credentials: 'include' })
+      .then(async response => response.ok ? response.json() : null)
+      .then(session => {
+        if (session?.authenticated && session.token) sessionStorage.setItem('adalAdminToken', session.token);
+      })
+      .catch(() => {});
+  }, [adminOpen]);
+
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (sectionId === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const closeAdmin = () => { setAdminOpen(false); setMediaOpen(false); window.location.hash = ''; };
+  const closeAdmin = () => { sessionStorage.removeItem('adalAdminToken'); setAdminOpen(false); setMediaOpen(false); window.location.hash = ''; };
   const openMedia = () => { setMediaOpen(true); window.location.hash = '#admin-media'; };
 
   return (

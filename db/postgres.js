@@ -6,9 +6,6 @@ const connectionString = process.env.DATABASE_URL || '';
 export const databaseEnabled = Boolean(connectionString);
 const pool = databaseEnabled ? new Pool({
   connectionString,
-  // Render's internal Postgres URL is on the private network and may use a
-  // self-signed certificate. Do not reject that certificate in production.
-  // External URLs should include ?sslmode=require in the URL when TLS is needed.
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
 }) : null;
 export async function query(text, params = []) { if (!pool) throw new Error('PostgreSQL database is not configured. Set DATABASE_URL before starting the server.'); return pool.query(text, params); }
@@ -33,10 +30,11 @@ export async function initializeSchema() {
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_visits (id SERIAL PRIMARY KEY, method VARCHAR(12), path VARCHAR(255), ip VARCHAR(64), user_agent TEXT, referrer VARCHAR(255), status_code INTEGER, visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_content_items (id SERIAL PRIMARY KEY, type VARCHAR(30) NOT NULL, title VARCHAR(200) NOT NULL, body TEXT DEFAULT '', image_url VARCHAR(255), metadata JSONB NOT NULL DEFAULT '{}'::jsonb, sort_order INTEGER NOT NULL DEFAULT 0, published BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_adal_content_type ON adal_content_items(type, published, sort_order)`);
-  await pool.query(`CREATE TABLE IF NOT EXISTS adal_media (id SERIAL PRIMARY KEY, image_url VARCHAR(255) NOT NULL, image_name VARCHAR(255) NOT NULL, mime_type VARCHAR(80), size_bytes INTEGER, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS adal_media (id SERIAL PRIMARY KEY, image_url VARCHAR(255) NOT NULL, image_name VARCHAR(255) NOT NULL, mime_type VARCHAR(80), size_bytes INTEGER, image_data BYTEA, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+  await pool.query(`ALTER TABLE adal_media ADD COLUMN IF NOT EXISTS image_data BYTEA`);
   const defaults=[['3KG','3kg Camping Cylinder','3kg','3kg',32000,'Portable LPG cylinder','/uploads/default-3kg.jpg'],['6KG','6kg Domestic Cylinder','6kg','6kg',55000,'Household LPG cylinder','/uploads/default-6kg.jpg'],['12.5KG','12.5kg Family Cylinder','12.5kg','12.5kg',90000,'Family LPG cylinder','/uploads/1789549049679-12-5kg.jpg'],['38KG','38kg Commercial Cylinder','38kg','38kg',180000,'Commercial LPG cylinder','/uploads/1789549017989-38kg.png'],['ACCESSORIES','Gas Accessories','accessories','accessories',0,'Gas accessories and safety equipment','/uploads/default-accessories.svg']];
   for(const product of defaults) await pool.query(`INSERT INTO adal_products (code,name,size,category,price,description,image_url) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (code) DO NOTHING`,product);
   await pool.query(`UPDATE adal_products SET image_url='/uploads/1789549049679-12-5kg.jpg' WHERE code='12.5KG' AND (image_url IS NULL OR image_url='/uploads/default-12.5kg.jpg')`);
-  await pool.query(`UPDATE adal_products SET image_url='/uploads/1789549017989-38kg.png' WHERE code='38KG' AND (image_url IS NULL OR image_url='/uploads/default-38kg.jpg')`);
+  await pool.query(`UPDATE adal_products SET image_url='/uploads/1789549017989-38kg.png' WHERE code='38KG' AND (image_url IS NULL OR image_url='/uploads/default-38kg.png')`);
   await pool.query(`UPDATE adal_products SET image_url='/uploads/default-accessories.svg' WHERE code='ACCESSORIES' AND (image_url IS NULL OR image_url='/uploads/default-accessories.jpg')`);
 }

@@ -14,17 +14,35 @@ export async function getMedia(req, res) {
   } catch (error) { return res.status(500).json({ message: error.message }); }
 }
 
+export async function serveMedia(req, res) {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).end();
+    const result = await query('SELECT mime_type,image_data FROM adal_media WHERE id=$1',[id]);
+    if (!result.rows.length || !result.rows[0].image_data) return res.status(404).end();
+    res.set('Content-Type', result.rows[0].mime_type || 'application/octet-stream');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.send(result.rows[0].image_data);
+  } catch (error) { return res.status(500).end(); }
+}
+
 export async function uploadMedia(req, res) {
   try {
     if (!req.file) return res.status(400).json({ message: 'No image file provided.' });
-    const item = { image_url:`/uploads/${req.file.filename}`, image_name:req.file.originalname, mime_type:req.file.mimetype, size_bytes:req.file.size };
+    const imageData = await fs.promises.readFile(req.file.path);
+    const item = { image_url:`/api/media/${req.file.filename}`, image_name:req.file.originalname, mime_type:req.file.mimetype, size_bytes:req.file.size };
     if (!process.env.DATABASE_URL) {
       const media = { id: Math.max(0, ...store(req.app).map(x => Number(x.id))) + 1, ...item, uploaded_at:new Date().toISOString() };
-      store(req.app).unshift(media); return res.status(201).json(media);
+      store(req.app).unshift(media); await fs.promises.unlink(req.file.path).catch(()=>{}); return res.status(201).json(media);
     }
-    const result = await query('INSERT INTO adal_media (image_url,image_name,mime_type,size_bytes) VALUES ($1,$2,$3,$4) RETURNING *',[item.image_url,item.image_name,item.mime_type,item.size_bytes]);
-    return res.status(201).json(result.rows[0]);
-  } catch (error) { if (req.file) removeFile(`/uploads/${req.file.filename}`); return res.status(500).json({ message:error.message }); }
+    const result = await query('INSERT INTO adal_media (image_url,image_name,mime_type,size_bytes,image_data) VALUES ($1,$2,$3,$4,$5) RETURNING id,image_url,image_name,mime_type,size_bytes,uploaded_at',[item.image_url,item.image_name,item.mime_type,item.size_bytes,imageData]);
+    await fs.promises.unlink(req.file.path).catch(()=>{});
+    const media = result.rows[0];
+    const stableUrl = `/api/media/${media.id}`;
+    if (media.image_url !== stableUrl) await query('UPDATE adal_media SET image_url=$1 WHERE id=$2',[stableUrl,media.id]);
+    media.image_url = stableUrl;
+    return res.status(201).json(media);
+  } catch (error) { if (req.file) await fs.promises.unlink(req.file.path).catch(()=>{}); return res.status(500).json({ message:error.message }); }
 }
 
 export async function deleteMedia(req, res) {
@@ -32,11 +50,10 @@ export async function deleteMedia(req, res) {
     const id = Number(req.params.id); if (!Number.isInteger(id)) return res.status(400).json({ message:'Invalid media ID.' });
     if (!process.env.DATABASE_URL) {
       const items=store(req.app); const index=items.findIndex(x=>Number(x.id)===id); if(index<0)return res.status(404).json({message:'Media item not found.'});
-      const media=items[index]; const used=(req.app.locals.contentStore||[]).some(x=>x.image_url===media.image_url); if(used)return res.status(409).json({message:'This image is currently used by website content and cannot be deleted.'});
-      removeFile(media.image_url); items.splice(index,1); return res.json({success:true,deletedId:id});
+      const media=items[index]; items.splice(index,1); return res.json({success:true,deletedId:id});
     }
     const media=await query('SELECT image_url FROM adal_media WHERE id=$1',[id]); if(!media.rows.length)return res.status(404).json({message:'Media item not found.'});
     const used=await query('SELECT COUNT(*)::int AS count FROM adal_content_items WHERE image_url=$1',[media.rows[0].image_url]); if(used.rows[0].count>0)return res.status(409).json({message:'This image is currently used by website content and cannot be deleted.'});
-    const result=await query('DELETE FROM adal_media WHERE id=$1 RETURNING image_url',[id]); removeFile(result.rows[0].image_url); return res.json({success:true,deletedId:id});
+    const result=await query('DELETE FROM adal_media WHERE id=$1 RETURNING id',[id]); return res.json({success:true,deletedId:result.rows[0].id});
   } catch (error) { return res.status(500).json({ message:error.message }); }
 }

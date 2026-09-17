@@ -6,9 +6,9 @@ import { uploadDir } from '../config/upload.js';
 export const defaultProducts = [
   { id: 1, code: '3KG', name: '3kg Camping Cylinder', size: '3kg', category: '3kg', price: 32000, description: 'Portable LPG cylinder', image_url: '/uploads/default-3kg.jpg' },
   { id: 2, code: '6KG', name: '6kg Domestic Cylinder', size: '6kg', category: '6kg', price: 55000, description: 'Household LPG cylinder', image_url: '/uploads/default-6kg.jpg' },
-  { id: 3, code: '12.5KG', name: '12.5kg Family Cylinder', size: '12.5kg', category: '12.5kg', price: 90000, description: 'Family LPG cylinder', image_url: '/uploads/default-12.5kg.jpg' },
-  { id: 4, code: '38KG', name: '38kg Commercial Cylinder', size: '38kg', category: '38kg', price: 180000, description: 'Commercial LPG cylinder', image_url: '/uploads/default-38kg.jpg' },
-  { id: 5, code: 'ACCESSORIES', name: 'Accessories', size: 'accessories', category: 'accessories', price: 0, description: 'Gas accessories and safety kit', image_url: '/uploads/default-accessories.jpg' },
+  { id: 3, code: '12.5KG', name: '12.5kg Family Cylinder', size: '12.5kg', category: '12.5kg', price: 90000, description: 'Family LPG cylinder', image_url: '/uploads/1789549049679-12-5kg.jpg' },
+  { id: 4, code: '38KG', name: '38kg Commercial Cylinder', size: '38kg', category: '38kg', price: 180000, description: 'Commercial LPG cylinder', image_url: '/uploads/1789549017989-38kg.png' },
+  { id: 5, code: 'ACCESSORIES', name: 'Accessories', size: 'accessories', category: 'accessories', price: 0, description: 'Gas accessories and safety kit', image_url: '/uploads/default-accessories.svg' },
 ];
 
 const normalizeCode = (value) => String(value || '').trim().toUpperCase().replace(/\s+/g, '-');

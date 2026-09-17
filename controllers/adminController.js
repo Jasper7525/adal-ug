@@ -66,6 +66,25 @@ export async function resetPassword(req, res) {
   } catch (error) { console.error('Admin password reset failed:', error); return res.status(500).json({ success: false, message: 'Password reset failed on the server.' }); }
 }
 
+export async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    const currentToken = req.cookies?.adal_admin_session || req.headers['x-admin-token'];
+    if (!currentToken) return res.status(401).json({ success: false, message: 'Administrator authentication is required.' });
+    if (!currentPassword || !passwordIsStrong(newPassword)) return res.status(400).json({ success: false, message: 'New password must be at least 12 characters and include uppercase, lowercase, number and symbol.' });
+    const sessionResult = await query(`SELECT username, expires_at FROM adal_admin_sessions WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP LIMIT 1`, [hashToken(currentToken)]);
+    const session = sessionResult.rows[0];
+    if (!session) return res.status(401).json({ success: false, message: 'Your admin session has expired. Please sign in again.' });
+    const credentialResult = await query(`SELECT username, password_hash FROM adal_admin_credentials WHERE id = 1 LIMIT 1`);
+    const credential = credentialResult.rows[0];
+    if (!credential || credential.username !== session.username || !verifyPassword(currentPassword, credential.password_hash)) return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
+    await query(`UPDATE adal_admin_credentials SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = 1`, [hashAdminPassword(newPassword)]);
+    await query(`DELETE FROM adal_admin_sessions`);
+    res.clearCookie('adal_admin_session', secureCookieOptions());
+    return res.json({ success: true, message: 'Password changed successfully. Please sign in again on all devices.' });
+  } catch (error) { console.error('Admin password change failed:', error); return res.status(500).json({ success: false, message: 'Password change failed on the server.' }); }
+}
+
 export async function getVisitors(req, res) {
   try { const result = await query(`SELECT id, method, path, ip, user_agent, referrer, status_code, visited_at FROM adal_visits ORDER BY visited_at DESC LIMIT 200`); return res.json(result.rows); } catch (error) { return res.status(500).json({ message: error.message }); }
 }

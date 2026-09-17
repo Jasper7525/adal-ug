@@ -25,6 +25,22 @@ export async function login(req, res) {
   } catch (error) { console.error('Admin login failed:', error); return res.status(500).json({ success: false, message: 'Administrator login failed on the server. Check the deployment logs.' }); }
 }
 
+export async function getSession(req, res) {
+  try {
+    const token = req.cookies?.adal_admin_session;
+    if (!token) return res.status(401).json({ authenticated: false });
+    const result = await query(`SELECT username, expires_at FROM adal_admin_sessions WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP LIMIT 1`, [hashToken(token)]);
+    if (!result.rows[0]) {
+      res.clearCookie('adal_admin_session', secureCookieOptions());
+      return res.status(401).json({ authenticated: false });
+    }
+    return res.json({ authenticated: true, username: result.rows[0].username, expiresAt: result.rows[0].expires_at });
+  } catch (error) {
+    console.error('Admin session check failed:', error);
+    return res.status(500).json({ authenticated: false, message: 'Unable to verify administrator session.' });
+  }
+}
+
 export async function logout(req, res) {
   try { const token = req.cookies?.adal_admin_session || req.headers['x-admin-token']; if (token) await query(`DELETE FROM adal_admin_sessions WHERE token_hash = $1`, [hashToken(token)]); } catch (error) { console.error('Admin logout failed:', error); }
   res.clearCookie('adal_admin_session', secureCookieOptions());

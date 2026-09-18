@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  ShieldCheck,
-  MapPin,
-  Phone,
-  MessageCircle,
-  Twitter,
-  Music2,
-  Youtube,
-  Facebook,
-  Download,
-} from 'lucide-react';
+import { ShieldCheck, MapPin, Phone } from 'lucide-react';
 import { MBARARA_DELIVERY_ZONES } from '../data/products';
 import { AdalLogo } from './AdalLogo';
+import { BrandIcon } from './BrandIcon';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
@@ -20,11 +11,11 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) => {
   const socialLinks = [
-    { label: 'WhatsApp', href: 'https://wa.me/256772123456', icon: MessageCircle, className: 'text-emerald-400 hover:text-emerald-300' },
-    { label: 'X', href: 'https://x.com/adaluganda', icon: Twitter, className: 'text-slate-300 hover:text-white' },
-    { label: 'TikTok', href: 'https://www.tiktok.com/@adaluganda', icon: Music2, className: 'text-pink-400 hover:text-pink-300' },
-    { label: 'YouTube', href: 'https://www.youtube.com/@adaluganda', icon: Youtube, className: 'text-red-400 hover:text-red-300' },
-    { label: 'Facebook', href: 'https://www.facebook.com/adaluganda', icon: Facebook, className: 'text-blue-400 hover:text-blue-300' },
+    { label: 'WhatsApp', href: 'https://wa.me/256772123456', brand: 'whatsapp' as const, className: 'text-emerald-400 hover:text-emerald-300' },
+    { label: 'X', href: 'https://x.com/adaluganda', brand: 'x' as const, className: 'text-slate-200 hover:text-white' },
+    { label: 'TikTok', href: 'https://www.tiktok.com/@adaluganda', brand: 'tiktok' as const, className: 'text-slate-200 hover:text-white' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@adaluganda', brand: 'youtube' as const, className: 'text-red-400 hover:text-red-300' },
+    { label: 'Facebook', href: 'https://www.facebook.com/adaluganda', brand: 'facebook' as const, className: 'text-blue-400 hover:text-blue-300' },
   ];
 
   return (
@@ -120,22 +111,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) =
 
             <div className="pt-4">
               <div className="flex items-center gap-2">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={social.label}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-900 transition hover:bg-slate-800 hover:border-slate-500"
-                    >
-                      <Icon className={`w-4 h-4 ${social.className}`} />
-                    </a>
-                  );
-                })}
+                {socialLinks.map((social) => (
+                  <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-800">
+                    <BrandIcon brand={social.brand} className={`h-5 w-5 ${social.className}`} />
+                  </a>
+                ))}
               </div>
             </div>
           </div>
@@ -149,16 +130,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) =
             <span className="text-slate-500">Mbarara City, Uganda</span>
             <span>•</span>
             <span className="text-slate-500">Powered by Clean LPG Energy</span>
-            <span>•</span>
-            <a
-              href="/docs/adal-uganda-user-requirements-document.html"
-              download="adal-uganda-user-requirements-document.html"
-              className="inline-flex items-center gap-1.5 text-orange-300 hover:text-orange-200 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download URD
-            </a>
-          </div>
+            </div>
         </div>
 
       </div>

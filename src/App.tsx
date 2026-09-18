@@ -56,6 +56,12 @@ export default function App() {
   }, []);
 
   const scrollToSection = (sectionId: string) => {
+    const catalogFilter = sectionId === 'accessories' ? 'accessories' : sectionId === 'catalog' ? 'cylinders' : null;
+    if (catalogFilter) {
+      window.dispatchEvent(new CustomEvent('adal-catalog-filter', { detail: catalogFilter }));
+      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     const el = document.getElementById(sectionId);
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (sectionId === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });

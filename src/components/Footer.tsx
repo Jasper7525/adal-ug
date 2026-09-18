@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, MapPin, Phone, Download } from 'lucide-react';
+import { ShieldCheck, MapPin, Phone } from 'lucide-react';
 import { MBARARA_DELIVERY_ZONES } from '../data/products';
 import { AdalLogo } from './AdalLogo';
 import { BrandIcon } from './BrandIcon';
@@ -130,16 +130,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) =
             <span className="text-slate-500">Mbarara City, Uganda</span>
             <span>•</span>
             <span className="text-slate-500">Powered by Clean LPG Energy</span>
-            <span>•</span>
-            <a
-              href="/docs/adal-uganda-user-requirements-document.html"
-              download="adal-uganda-user-requirements-document.html"
-              className="inline-flex items-center gap-1.5 text-orange-300 hover:text-orange-200 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download URD
-            </a>
-          </div>
+            </div>
         </div>
 
       </div>

@@ -26,7 +26,7 @@
   }
 }
 
-.typewriter-line { display:block; white-space:normal; overflow-wrap:anywhere; max-width:100%; border-right:2px solid rgba(251,191,36,.95); }
+.typewriter-line { display:block; white-space:normal; overflow-wrap:anywhere; max-width:100%; }
 .typed-text { display:inline-block; }
 .typed-cursor { display:inline-block; margin-left:4px; color:#fbbf24; font-family:monospace; font-weight:900; animation:blink 900ms step-end infinite; }
 .typed-cursor-second { color:#fbbf24; }

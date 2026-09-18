@@ -34,7 +34,7 @@ export async function initializeSchema() {
     ['partner','NATGAS Uganda','LPG logistics, distribution and technical services in Uganda.','https://natgasuganda.com/wp-content/uploads/2022/06/NATGAS-LOGO.jpg',1],
     ['partner','TotalEnergies Uganda','Energy partner and LPG brand operating in Uganda.','https://cdn.greatugandajobs.com/jsjobsdata/data/employer/comp_7464/logo/totalenergies-logo-png_seeklogo-405344.png',2]
   ];
-  for(const [type,title,body,image_url,sort_order] of partnerDefaults) await pool.query(`INSERT INTO adal_content_items(type,title,body,image_url,sort_order,published) SELECT $1,$2,$3,$4,$5,TRUE WHERE NOT EXISTS (SELECT 1 FROM adal_content_items WHERE type=$1 AND title=$2)`,[type,title,body,image_url,sort_order]);
+  for(const [type,title,body,image_url,sort_order] of partnerDefaults) await pool.query(`INSERT INTO adal_content_items(type,title,body,image_url,sort_order,published) SELECT $1::text,$2::text,$3::text,$4::text,$5::integer,TRUE WHERE NOT EXISTS (SELECT 1 FROM adal_content_items WHERE type=$1::text AND title=$2::text)`,[type,title,body,image_url,sort_order]);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS adal_media (id SERIAL PRIMARY KEY, image_url VARCHAR(255) NOT NULL, image_name VARCHAR(255) NOT NULL, mime_type VARCHAR(80), size_bytes INTEGER, image_data BYTEA, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
   await pool.query(`ALTER TABLE adal_media ADD COLUMN IF NOT EXISTS image_data BYTEA`);

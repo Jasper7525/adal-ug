@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  ShieldCheck,
-  MapPin,
-  Phone,
-  MessageCircle,
-  Twitter,
-  Music2,
-  Youtube,
-  Facebook,
-  Download,
-} from 'lucide-react';
+import { ShieldCheck, MapPin, Phone, Download } from 'lucide-react';
 import { MBARARA_DELIVERY_ZONES } from '../data/products';
 import { AdalLogo } from './AdalLogo';
+import { BrandIcon } from './BrandIcon';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
@@ -120,22 +111,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) =
 
             <div className="pt-4">
               <div className="flex items-center gap-2">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={social.label}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-900 transition hover:bg-slate-800 hover:border-slate-500"
-                    >
-                      <Icon className={`w-4 h-4 ${social.className}`} />
-                    </a>
-                  );
-                })}
+                {socialLinks.map((social) => (
+                  <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-800">
+                    <BrandIcon brand={social.brand} className={`h-5 w-5 ${social.className}`} />
+                  </a>
+                ))}
               </div>
             </div>
           </div>

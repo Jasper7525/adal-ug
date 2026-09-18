@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, MapPin, ChevronDown, House, Flame, Wrench, ShieldCheck, Newspaper, Phone } from 'lucide-react';
+import { Menu, X, MapPin, ChevronDown, House, Flame, Wrench, ShieldCheck, Newspaper, Phone, Users } from 'lucide-react';
 import { AdalLogo } from './AdalLogo';
 interface NavbarProps { onNavigate: (sectionId: string) => void; }
 interface NavItem { label: string; target: string; icon: React.ElementType; }
@@ -7,7 +7,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false); const [mobileMenuOpen, setMobileMenuOpen] = useState(false); const [activeSection, setActiveSection] = useState('home');
   const navRef = useRef<HTMLElement | null>(null); const [indicator, setIndicator] = useState({ x: 0, width: 0 });
   const navLinks: NavItem[] = [
-    { label: 'Home', target: 'home', icon: House }, { label: 'Cylinders & Prices', target: 'catalog', icon: Flame }, { label: 'Accessories', target: 'accessories', icon: Wrench }, { label: 'Why Adal', target: 'contact', icon: ShieldCheck }, { label: 'Safety Guide', target: 'safety-guide', icon: ShieldCheck }, { label: 'News & Updates', target: 'news', icon: Newspaper },
+    { label: 'Home', target: 'home', icon: House }, { label: 'Cylinders & Prices', target: 'catalog', icon: Flame }, { label: 'Accessories', target: 'accessories', icon: Wrench }, { label: 'About Us', target: 'about', icon: Users }, { label: 'Why Adal', target: 'contact', icon: ShieldCheck }, { label: 'Safety Guide', target: 'safety-guide', icon: ShieldCheck }, { label: 'News & Updates', target: 'news', icon: Newspaper },
   ];
   const updateIndicator = (targetSection = activeSection) => { const active = navRef.current?.querySelector<HTMLElement>(`[data-nav-target="${targetSection}"]`); if (!active || !navRef.current) return; const parent = navRef.current.getBoundingClientRect(); const rect = active.getBoundingClientRect(); setIndicator({ x: rect.left - parent.left, width: rect.width }); };
   useEffect(() => { const handleScroll = () => setIsScrolled(window.scrollY > 20); const handleResize = () => updateIndicator(); window.addEventListener('scroll', handleScroll, { passive: true }); window.addEventListener('resize', handleResize); return () => { window.removeEventListener('scroll', handleScroll); window.removeEventListener('resize', handleResize); }; }, [activeSection]);

@@ -12,6 +12,7 @@ import { MediaLibraryPage } from './components/MediaLibraryPage';
 import { PasswordManagementPage } from './components/PasswordManagementPage';
 import { NewsUpdates } from './components/NewsUpdates';
 import { AboutUs } from './components/AboutUs';
+import { Partners } from './components/Partners';
 
 const ADMIN_HASHES = ['#admin', '#admin-media', '#admin-reset', '#admin-change'];
 
@@ -84,6 +85,7 @@ export default function App() {
           <SafetyFeatures />
           <ProductCatalog onContactDepot={() => scrollToSection('contact-form')} />
           <AboutUs />
+          <Partners />
           <NewsUpdates />
           <ContactSection />
         </>}

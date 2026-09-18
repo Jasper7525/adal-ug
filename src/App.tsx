@@ -11,6 +11,7 @@ import { AdminPage } from './components/AdminPage';
 import { MediaLibraryPage } from './components/MediaLibraryPage';
 import { PasswordManagementPage } from './components/PasswordManagementPage';
 import { NewsUpdates } from './components/NewsUpdates';
+import { AboutUs } from './components/AboutUs';
 
 const ADMIN_HASHES = ['#admin', '#admin-media', '#admin-reset', '#admin-change'];
 
@@ -76,6 +77,7 @@ export default function App() {
           <Hero onExploreCatalog={() => scrollToSection('catalog')} onContactDepot={() => scrollToSection('contact-form')} />
           <SafetyFeatures />
           <ProductCatalog onContactDepot={() => scrollToSection('contact-form')} />
+          <AboutUs />
           <NewsUpdates />
           <ContactSection />
         </>}

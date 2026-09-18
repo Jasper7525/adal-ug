@@ -20,11 +20,11 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenCodeModal }) => {
   const socialLinks = [
-    { label: 'WhatsApp', href: 'https://wa.me/256772123456', icon: MessageCircle, className: 'text-emerald-400 hover:text-emerald-300' },
-    { label: 'X', href: 'https://x.com/adaluganda', icon: Twitter, className: 'text-slate-300 hover:text-white' },
-    { label: 'TikTok', href: 'https://www.tiktok.com/@adaluganda', icon: Music2, className: 'text-pink-400 hover:text-pink-300' },
-    { label: 'YouTube', href: 'https://www.youtube.com/@adaluganda', icon: Youtube, className: 'text-red-400 hover:text-red-300' },
-    { label: 'Facebook', href: 'https://www.facebook.com/adaluganda', icon: Facebook, className: 'text-blue-400 hover:text-blue-300' },
+    { label: 'WhatsApp', href: 'https://wa.me/256772123456', brand: 'whatsapp' as const, className: 'text-emerald-400 hover:text-emerald-300' },
+    { label: 'X', href: 'https://x.com/adaluganda', brand: 'x' as const, className: 'text-slate-200 hover:text-white' },
+    { label: 'TikTok', href: 'https://www.tiktok.com/@adaluganda', brand: 'tiktok' as const, className: 'text-slate-200 hover:text-white' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@adaluganda', brand: 'youtube' as const, className: 'text-red-400 hover:text-red-300' },
+    { label: 'Facebook', href: 'https://www.facebook.com/adaluganda', brand: 'facebook' as const, className: 'text-blue-400 hover:text-blue-300' },
   ];
 
   return (
